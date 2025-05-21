@@ -3,6 +3,7 @@ import './App.css'
 
 function App() {
   const [players, setPlayers] = useState([
+    {name: "Aidan", roles: ["Healer", "DPS"]},
     {name: "Chris", roles: ["Healer", "DPS"]},
     {name: "Rob", roles: ["Healer", "DPS"]},
     {name: "Kyle", roles: ["DPS"]},
