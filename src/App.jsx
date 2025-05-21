@@ -138,10 +138,6 @@ function App() {
     // Calculate the ideal number of groups based on player count
     let idealGroups = Math.ceil(totalPlayers / 5)
     
-    // Gather players by role capabilities
-    const canTank = playerPool.filter(p => p.roles.includes("Tank"))
-    const canHeal = playerPool.filter(p => p.roles.includes("Healer"))
-    
     // If we have 6 or more players, we should create at least 2 groups
     // even if we need to use PUG tanks/healers
     if (totalPlayers >= 6) {
@@ -155,83 +151,109 @@ function App() {
     // Initialize the groups
     const groups = Array(numGroups).fill().map(() => [])
     
-    // Make a copy of the player pool for tracking assignments
-    let availablePlayers = [...playerPool]
+    // ----- IMPROVED ROLE DISTRIBUTION LOGIC -----
     
-    // Assign tanks first (prioritize real tanks)
-    for (let i = 0; i < numGroups; i++) {
-      // Try to find tanks who can ONLY tank
-      const tankOnlyPlayer = availablePlayers.find(p => 
-        p.roles.includes("Tank") && p.roles.length === 1
-      )
+    // First, collect all players by their roles
+    const tankPlayers = [...playerPool.filter(p => p.roles.includes("Tank"))]
+    const healerPlayers = [...playerPool.filter(p => p.roles.includes("Healer"))]
+    const dpsPlayers = [...playerPool.filter(p => p.roles.includes("DPS"))]
+    
+    // Shuffle these collections to avoid always picking the same players
+    tankPlayers.sort(() => Math.random() - 0.5)
+    healerPlayers.sort(() => Math.random() - 0.5)
+    dpsPlayers.sort(() => Math.random() - 0.5)
+    
+    // Track assigned players
+    const assignedPlayers = new Set()
+    
+    // First, assign tank-only players to distribute them evenly
+    const tankOnlyPlayers = tankPlayers.filter(p => p.roles.length === 1)
+    tankOnlyPlayers.forEach((player, index) => {
+      const groupIndex = index % numGroups
+      groups[groupIndex].push({...player, assignedRole: "Tank"})
+      assignedPlayers.add(player.name)
+    })
+    
+    // Then assign remaining tanks
+    const remainingTanks = tankPlayers.filter(p => !assignedPlayers.has(p.name))
+    remainingTanks.forEach((player, index) => {
+      const groupIndex = index % numGroups
       
-      if (tankOnlyPlayer) {
-        groups[i].push({...tankOnlyPlayer, assignedRole: "Tank"})
-        availablePlayers = availablePlayers.filter(p => p.name !== tankOnlyPlayer.name)
-      } else {
-        // No tank-only players, find anyone who can tank
-        const tankPlayer = availablePlayers.find(p => p.roles.includes("Tank"))
-        
-        if (tankPlayer) {
-          groups[i].push({...tankPlayer, assignedRole: "Tank"})
-          availablePlayers = availablePlayers.filter(p => p.name !== tankPlayer.name)
-        }
-        // If we run out of real tanks, we'll add PUG tanks later
+      // Skip groups that already have a tank
+      if (groups[groupIndex].some(p => p.assignedRole === "Tank")) {
+        return
       }
-    }
+      
+      groups[groupIndex].push({...player, assignedRole: "Tank"})
+      assignedPlayers.add(player.name)
+    })
     
-    // Assign healers next
+    // Assign healer-only players next
+    const healerOnlyPlayers = healerPlayers.filter(p => p.roles.length === 1 && !assignedPlayers.has(p.name))
+    healerOnlyPlayers.forEach((player, index) => {
+      const groupIndex = index % numGroups
+      
+      // Skip groups that already have a healer
+      if (groups[groupIndex].some(p => p.assignedRole === "Healer")) {
+        const availableGroups = groups
+          .map((group, idx) => ({ group, idx }))
+          .filter(g => !g.group.some(p => p.assignedRole === "Healer"))
+        
+        if (availableGroups.length > 0) {
+          const targetGroup = availableGroups[0]
+          groups[targetGroup.idx].push({...player, assignedRole: "Healer"})
+          assignedPlayers.add(player.name)
+        }
+      } else {
+        groups[groupIndex].push({...player, assignedRole: "Healer"})
+        assignedPlayers.add(player.name)
+      }
+    })
+    
+    // Assign remaining healers
+    const remainingHealers = healerPlayers.filter(p => !assignedPlayers.has(p.name))
     for (let i = 0; i < numGroups; i++) {
-      // Skip if this group already has a healer (might happen if a tank-healer was assigned)
+      // Skip if this group already has a healer
       if (groups[i].some(p => p.assignedRole === "Healer")) {
         continue
       }
       
-      // Try to find healers who can ONLY heal
-      const healerOnlyPlayer = availablePlayers.find(p => 
-        p.roles.includes("Healer") && p.roles.length === 1
-      )
-      
-      if (healerOnlyPlayer) {
-        groups[i].push({...healerOnlyPlayer, assignedRole: "Healer"})
-        availablePlayers = availablePlayers.filter(p => p.name !== healerOnlyPlayer.name)
-      } else {
-        // No healer-only players, find anyone who can heal
-        const healerPlayer = availablePlayers.find(p => p.roles.includes("Healer"))
-        
-        if (healerPlayer) {
-          groups[i].push({...healerPlayer, assignedRole: "Healer"})
-          availablePlayers = availablePlayers.filter(p => p.name !== healerPlayer.name)
-        }
-        // If we run out of real healers, we'll add PUG healers later
+      if (remainingHealers.length > 0) {
+        const player = remainingHealers.shift()
+        groups[i].push({...player, assignedRole: "Healer"})
+        assignedPlayers.add(player.name)
       }
     }
     
     // Distribute remaining players as DPS
+    const remainingPlayers = playerPool.filter(p => !assignedPlayers.has(p.name))
+    
     if (groupMode === "even") {
       // Distribute players evenly
-      while (availablePlayers.length > 0) {
+      remainingPlayers.forEach((player) => {
         // Find the group with the fewest players
         const groupSizes = groups.map(g => g.length)
         const minSize = Math.min(...groupSizes)
-        const targetIndex = groupSizes.indexOf(minSize)
+        const targetGroups = groups
+          .map((group, idx) => ({ group, idx }))
+          .filter(g => g.group.length === minSize)
         
-        // Assign the next player as DPS
-        const nextPlayer = availablePlayers[0]
-        groups[targetIndex].push({...nextPlayer, assignedRole: "DPS"})
-        availablePlayers.shift()
-      }
+        // Randomly choose one of the smallest groups
+        const randomIndex = Math.floor(Math.random() * targetGroups.length)
+        const targetGroup = targetGroups[randomIndex]
+        
+        groups[targetGroup.idx].push({...player, assignedRole: "DPS"})
+        assignedPlayers.add(player.name)
+      })
     } else {
       // Random distribution
-      while (availablePlayers.length > 0) {
+      remainingPlayers.forEach((player) => {
         // Randomly select a group
         const randomIndex = Math.floor(Math.random() * numGroups)
         
-        // Assign the next player as DPS
-        const nextPlayer = availablePlayers[0]
-        groups[randomIndex].push({...nextPlayer, assignedRole: "DPS"})
-        availablePlayers.shift()
-      }
+        groups[randomIndex].push({...player, assignedRole: "DPS"})
+        assignedPlayers.add(player.name)
+      })
     }
     
     // Fill missing roles with PUGs
@@ -254,69 +276,6 @@ function App() {
     })
     
     return groups
-  }
-
-  // Helper function to create a single, complete group
-  const createSingleGroup = (players) => {
-    const group = []
-    let availablePlayers = [...players]
-    
-    // Assign tank first (prioritize players who can ONLY tank)
-    const tankOnlyPlayer = availablePlayers.find(p => 
-      p.roles.includes("Tank") && p.roles.length === 1
-    )
-    
-    if (tankOnlyPlayer) {
-      group.push({...tankOnlyPlayer, assignedRole: "Tank"})
-      availablePlayers = availablePlayers.filter(p => p.name !== tankOnlyPlayer.name)
-    } else {
-      // No tank-only player, find anyone who can tank
-      const tankPlayer = availablePlayers.find(p => p.roles.includes("Tank"))
-      
-      if (tankPlayer) {
-        group.push({...tankPlayer, assignedRole: "Tank"})
-        availablePlayers = availablePlayers.filter(p => p.name !== tankPlayer.name)
-      } else {
-        // If we have no tank, add a PUG
-        group.push(getRandomPUG("Tank"))
-      }
-    }
-    
-    // Assign healer (prioritize players who can ONLY heal)
-    const healerOnlyPlayer = availablePlayers.find(p => 
-      p.roles.includes("Healer") && p.roles.length === 1
-    )
-    
-    if (healerOnlyPlayer) {
-      group.push({...healerOnlyPlayer, assignedRole: "Healer"})
-      availablePlayers = availablePlayers.filter(p => p.name !== healerOnlyPlayer.name)
-    } else {
-      // No healer-only player, find anyone who can heal
-      const healerPlayer = availablePlayers.find(p => p.roles.includes("Healer"))
-      
-      if (healerPlayer) {
-        group.push({...healerPlayer, assignedRole: "Healer"})
-        availablePlayers = availablePlayers.filter(p => p.name !== healerPlayer.name)
-      } else {
-        // If we have no healer, add a PUG
-        group.push(getRandomPUG("Healer"))
-      }
-    }
-    
-    // Assign remaining players as DPS
-    while (group.filter(p => p.assignedRole === "DPS").length < 3 && availablePlayers.length > 0) {
-      const nextPlayer = availablePlayers[0]
-      group.push({...nextPlayer, assignedRole: "DPS"})
-      availablePlayers.shift()
-    }
-    
-    // Fill remaining DPS slots with PUGs if needed
-    const dpsCount = group.filter(p => p.assignedRole === "DPS").length
-    for (let i = dpsCount; i < 3; i++) {
-      group.push(getRandomPUG("DPS"))
-    }
-    
-    return group
   }
 
   return (
