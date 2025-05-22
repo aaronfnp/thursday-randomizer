@@ -463,6 +463,105 @@ input[type="checkbox"] {
   color: #ccc;
 }
 
+/* Dice animation */
+.dice-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+}
+
+.dice {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  transform-style: preserve-3d;
+  animation: rolling 2s linear infinite;
+}
+
+.dice-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: rgba(142, 111, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.dot {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Dot positions */
+.center { top: 42px; left: 42px; }
+.top-left { top: 16px; left: 16px; }
+.top-right { top: 16px; right: 16px; }
+.bottom-left { bottom: 16px; left: 16px; }
+.bottom-right { bottom: 16px; right: 16px; }
+.middle-left { top: 42px; left: 16px; }
+.middle-right { top: 42px; right: 16px; }
+
+/* Face positions */
+.one {
+  transform: translateZ(50px);
+}
+.two {
+  transform: rotateY(180deg) translateZ(50px);
+}
+.three {
+  transform: rotateY(90deg) translateZ(50px);
+}
+.four {
+  transform: rotateY(-90deg) translateZ(50px);
+}
+.five {
+  transform: rotateX(90deg) translateZ(50px);
+}
+.six {
+  transform: rotateX(-90deg) translateZ(50px);
+}
+
+@keyframes rolling {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: rotateX(90deg) rotateY(180deg);
+  }
+  50% {
+    transform: rotateX(180deg) rotateY(90deg);
+  }
+  75% {
+    transform: rotateX(270deg) rotateY(270deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(360deg);
+  }
+}
+
+.dice-text {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #8e6fff;
+  animation: pulse-text 1.5s infinite;
+}
+
+@keyframes pulse-text {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
 /* Responsive design for mobile */
 @media (max-width: 768px) {
   .content-container {

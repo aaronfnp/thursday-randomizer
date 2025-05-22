@@ -3,7 +3,7 @@ import './App.css'
 
 function App() {
   const [players, setPlayers] = useState([
-    {name: "Aidan", roles: ["Healer", "DPS"]},
+    {name: "Aidan", roles: ["Healer", "DPS", "Tank"]},
     {name: "Chris", roles: ["Healer", "DPS"]},
     {name: "Rob", roles: ["Healer", "DPS"]},
     {name: "Kyle", roles: ["DPS"]},
@@ -17,6 +17,7 @@ function App() {
   const [isDragging, setIsDragging] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState(null)
   const [groupMode, setGroupMode] = useState("even") // "even" or "random"
+  const [isLoading, setIsLoading] = useState(false)
   
   const roles = [
     {
@@ -122,14 +123,23 @@ function App() {
       return
     }
 
-    // Create a working copy of players
-    const playerPool = [...players]
+    // Show loading animation
+    setIsLoading(true)
     
-    // Analyze the players and determine optimal number of groups
-    const finalGroups = generateOptimalGroups(playerPool)
-    
-    // Set the final groups
-    setGroups(finalGroups)
+    // Use setTimeout to create a slight delay for the animation
+    setTimeout(() => {
+      // Create a working copy of players
+      const playerPool = [...players]
+      
+      // Analyze the players and determine optimal number of groups
+      const finalGroups = generateOptimalGroups(playerPool)
+      
+      // Set the final groups
+      setGroups(finalGroups)
+      
+      // Hide loading animation
+      setIsLoading(false)
+    }, 1500) // 1.5 seconds for the animation
   }
 
   const generateOptimalGroups = (playerPool) => {
@@ -279,6 +289,50 @@ function App() {
     return groups
   }
 
+  // Dice Animation Component
+  const DiceAnimation = () => {
+    return (
+      <div className="dice-container">
+        <div className="dice">
+          <div className="dice-face one">
+            <div className="dot center"></div>
+          </div>
+          <div className="dice-face two">
+            <div className="dot top-left"></div>
+            <div className="dot bottom-right"></div>
+          </div>
+          <div className="dice-face three">
+            <div className="dot top-left"></div>
+            <div className="dot center"></div>
+            <div className="dot bottom-right"></div>
+          </div>
+          <div className="dice-face four">
+            <div className="dot top-left"></div>
+            <div className="dot top-right"></div>
+            <div className="dot bottom-left"></div>
+            <div className="dot bottom-right"></div>
+          </div>
+          <div className="dice-face five">
+            <div className="dot top-left"></div>
+            <div className="dot top-right"></div>
+            <div className="dot center"></div>
+            <div className="dot bottom-left"></div>
+            <div className="dot bottom-right"></div>
+          </div>
+          <div className="dice-face six">
+            <div className="dot top-left"></div>
+            <div className="dot top-right"></div>
+            <div className="dot middle-left"></div>
+            <div className="dot middle-right"></div>
+            <div className="dot bottom-left"></div>
+            <div className="dot bottom-right"></div>
+          </div>
+        </div>
+        <p className="dice-text">Creating groups...</p>
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="app-header">
@@ -357,7 +411,10 @@ function App() {
         
         <div className='output-container'>
           <h2>Groups</h2>
-          {groups.length > 0 ? (
+          
+          {isLoading ? (
+            <DiceAnimation />
+          ) : groups.length > 0 ? (
             groups.map((group, groupIndex) => (
               <div className='group-output' key={groupIndex}>
                 <h3>Group {groupIndex + 1} ({group.filter(p => !p.isPug).length} players)</h3>
@@ -428,9 +485,9 @@ function App() {
         <button 
           className="create-groups-btn"
           onClick={createGroups}
-          disabled={players.length < 1}
+          disabled={players.length < 1 || isLoading}
         >
-          Create Groups
+          {isLoading ? "Rolling..." : "Create Groups"}
         </button>
       </div>
     </>
