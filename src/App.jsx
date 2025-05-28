@@ -124,23 +124,26 @@ const PlayerRow = ({
           </div>
         ))}
         
-        {/* Gear box toggle */}
+       
+        
         {/* Used roles indicator in rotation mode - now below the main row */}
         {rotationMode && player.usedRoles && player.usedRoles.length > 0 && (
           <div className="used-roles">
             <span className="used-roles-text">Used: </span>
             {player.usedRoles.map(role => (
               <img 
-              key={role}
-              src={getRoleIcon(role)} 
-              alt={role} 
-              className="used-role-icon" 
-              title={`Already played ${role}`}
+                key={role}
+                src={getRoleIcon(role)} 
+                alt={role} 
+                className="used-role-icon" 
+                title={`Already played ${role}`}
               />
             ))}
           </div>
         )}
-        <button 
+
+         {/* Gear box toggle */}
+         <button 
           className="gear-toggle"
           onClick={() => onToggleGearBox(index)}
           title="Role Preferences"
@@ -484,11 +487,22 @@ function App() {
     // In rotation mode, exclude already used roles
     if (rotationMode) {
       const usedRoles = player.usedRoles || []
-      availableRoles = availableRoles.filter(role => !usedRoles.includes(role))
+      const unusedRoles = availableRoles.filter(role => !usedRoles.includes(role))
       
-      // If all roles have been used, allow any role (reset cycle)
-      if (availableRoles.length === 0) {
-        availableRoles = player.roles.filter(role => neededRoles.includes(role))
+      // If there are unused roles, use those
+      if (unusedRoles.length > 0) {
+        availableRoles = unusedRoles
+      } else {
+        // If all roles have been used, check if ALL player's roles have been exhausted
+        const allRolesUsed = player.roles.every(playerRole => usedRoles.includes(playerRole))
+        
+        if (allRolesUsed) {
+          // Reset cycle - player can play any of their roles again
+          availableRoles = player.roles.filter(role => neededRoles.includes(role))
+        } else {
+          // Still have unused roles for other positions, but none for this needed role
+          return null
+        }
       }
     }
     
@@ -591,8 +605,25 @@ function App() {
         // Must have the role
         if (!p.roles.includes(role)) return false
         
-        // In rotation mode, must not have used this role already
-        if (rotationMode && (p.usedRoles || []).includes(role)) return false
+        // In rotation mode, check if role has been used
+        if (rotationMode) {
+          const usedRoles = p.usedRoles || []
+          // If this role hasn't been used, they can play it
+          if (!usedRoles.includes(role)) return true
+          
+          // If this role HAS been used, check if ALL their roles have been used
+          const allRolesUsed = p.roles.every(playerRole => usedRoles.includes(playerRole))
+          
+          // If all roles have been used, reset and allow any role
+          if (allRolesUsed) {
+            // Reset this player's used roles for the next cycle
+            newUsedRoles[p.name] = []
+            return true
+          }
+          
+          // Otherwise, they can't play this role yet
+          return false
+        }
         
         return true
       })
