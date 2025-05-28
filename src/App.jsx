@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Settings, RotateCcw } from 'lucide-react'
-import './App.css'
 
 // Component: Role preference gear box
 const GearBox = ({ player, playerIndex, onPreferenceChange }) => {
@@ -123,8 +122,6 @@ const PlayerRow = ({
             />
           </div>
         ))}
-        
-       
         
         {/* Used roles indicator in rotation mode - now below the main row */}
         {rotationMode && player.usedRoles && player.usedRoles.length > 0 && (
@@ -338,6 +335,18 @@ function App() {
   const [rotationMode, setRotationMode] = useState(false)
   const [expandedGearBoxes, setExpandedGearBoxes] = useState({})
 
+  // Add CSS styles directly to the component
+  const styles = `
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background-color: #242424;
+      color: rgba(255, 255, 255, 0.87);
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+    }
+  `
+
   // Random PUG names
   const pugNames = [
     "XxLegolasxX", "TankMcTankface", "ImNotHealing", "DPSGoGoGo", "HealzPlz",
@@ -449,8 +458,57 @@ function App() {
 
   const handlePreferenceChange = (playerIndex, role, value) => {
     const newPlayers = [...players]
-    const numValue = parseInt(value) || 0
-    newPlayers[playerIndex].preferences[role] = Math.max(0, Math.min(100, numValue))
+    const player = newPlayers[playerIndex]
+    const numValue = Math.max(0, Math.min(100, parseInt(value) || 0))
+    
+    // Get all active roles for this player
+    const activeRoles = player.roles || []
+    const otherActiveRoles = activeRoles.filter(r => r !== role)
+    
+    // Set the new value for the changed role
+    player.preferences[role] = numValue
+    
+    // Calculate remaining percentage to distribute
+    const remaining = 100 - numValue
+    
+    if (remaining <= 0) {
+      // If the new value is 100% or more, set all other roles to 0
+      otherActiveRoles.forEach(r => player.preferences[r] = 0)
+    } else if (otherActiveRoles.length > 0) {
+      // Calculate current total of other active roles
+      const othersTotal = otherActiveRoles.reduce((sum, r) => sum + (player.preferences[r] || 0), 0)
+      
+      if (othersTotal === 0) {
+        // If other roles are 0, distribute equally
+        const equalShare = Math.floor(remaining / otherActiveRoles.length)
+        const remainder = remaining % otherActiveRoles.length
+        otherActiveRoles.forEach((r, index) => {
+          player.preferences[r] = equalShare + (index < remainder ? 1 : 0)
+        })
+      } else {
+        // Distribute remaining percentage proportionally among other active roles
+        let distributedSoFar = 0
+        otherActiveRoles.forEach((r, index) => {
+          if (index === otherActiveRoles.length - 1) {
+            // Last role gets whatever is left to avoid rounding errors
+            player.preferences[r] = remaining - distributedSoFar
+          } else {
+            const proportion = (player.preferences[r] || 0) / othersTotal
+            const newAmount = Math.round(remaining * proportion)
+            player.preferences[r] = newAmount
+            distributedSoFar += newAmount
+          }
+        })
+      }
+    }
+    
+    // Ensure inactive roles stay at 0
+    Object.keys(player.preferences).forEach(r => {
+      if (!activeRoles.includes(r)) {
+        player.preferences[r] = 0
+      }
+    })
+    
     setPlayers(newPlayers)
   }
 
@@ -807,6 +865,694 @@ function App() {
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+
+        body {
+          font-family: 'Inter', 'Segoe UI', sans-serif;
+          background-color: #242424;
+          color: rgba(255, 255, 255, 0.87);
+          line-height: 1.5;
+        }
+
+        .app-header {
+          margin-bottom: 2rem;
+          position: relative;
+          display: flex;
+          justify-content: center;
+          padding: 1rem 0;
+        }
+
+        .title {
+          font-size: 3rem;
+          font-weight: 800;
+          position: relative;
+          padding: 0.5rem 1.5rem;
+          text-align: center;
+          border-radius: 8px;
+          background: linear-gradient(135deg, rgba(35, 39, 60, 0.8), rgba(30, 34, 52, 0.9));
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 
+                      0 10px 30px rgba(40, 57, 122, 0.2);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          z-index: 1;
+        }
+
+        .title-thursday {
+          background: linear-gradient(to bottom, #ffffff, #a5a7dd);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          text-shadow: 0 2px 10px rgba(116, 124, 207, 0.3);
+          margin-right: 0.3rem;
+        }
+
+        .title-plus {
+          background: linear-gradient(to bottom, #8e6fff, #4f34c3);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          font-size: 3.5rem;
+          font-weight: 900;
+          text-shadow: 0 0 20px rgba(142, 111, 255, 0.7);
+          position: relative;
+        }
+
+        .title-plus::after {
+          content: '';
+          position: absolute;
+          bottom: 0.2rem;
+          left: -0.2rem;
+          right: -0.2rem;
+          height: 3px;
+          background: linear-gradient(90deg, transparent, #8e6fff, transparent);
+          border-radius: 3px;
+          opacity: 0.7;
+        }
+
+        .title-glow {
+          position: absolute;
+          width: 120%;
+          height: 120%;
+          background: radial-gradient(circle, rgba(96, 108, 255, 0.1) 0%, rgba(30, 34, 52, 0) 70%);
+          top: -10%;
+          left: -10%;
+          pointer-events: none;
+          z-index: -1;
+          animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+          0% { opacity: 0.5; }
+          50% { opacity: 0.8; }
+          100% { opacity: 0.5; }
+        }
+
+        h2 {
+          margin-bottom: 0.8rem;
+          color: #61dafb;
+          font-size: 1.25rem;
+        }
+
+        .content-container {
+          display: flex;
+          flex-direction: row;
+          gap: 2rem;
+          margin: 2rem auto;
+          min-height: 70vh;
+          width: 1500px;
+        }
+
+        .input-container {
+          flex: 2;
+          display: flex;
+          flex-direction: column;
+          background-color: #1a1a1a;
+          border-radius: 8px;
+          padding: 1.5rem;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          text-align: left;
+          max-height: 70vh;
+          overflow-y: auto;
+        }
+
+        .output-container {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          background-color: #1a1a1a;
+          border-radius: 8px;
+          padding: 1.5rem;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          text-align: left;
+          max-height: 70vh;
+          overflow-y: auto;
+        }
+
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+
+        .reset-rotation-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(142, 111, 255, 0.2);
+          border: 1px solid #8e6fff;
+          color: #8e6fff;
+          padding: 0.5rem 1rem;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          transition: all 0.2s;
+        }
+
+        .reset-rotation-btn:hover {
+          background: rgba(142, 111, 255, 0.3);
+          transform: translateY(-1px);
+        }
+
+        .player-input-container {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.6rem;
+          margin-bottom: 0.6rem;
+          background-color: #2a2a2a;
+          border-radius: 4px;
+          position: relative;
+          cursor: grab;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .player-input-container li {
+          list-style: none;
+          min-width: 90px;
+          font-weight: bold;
+          font-size: 0.9rem;
+        }
+
+        .player-input-container.dragging {
+          opacity: 0.5;
+          transform: scale(0.98);
+          box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .used-roles {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          margin-left: 0.75rem;
+        }
+
+        .used-roles-text {
+          font-size: 0.75rem;
+          color: #888;
+        }
+
+        .used-role-icon {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          opacity: 0.6;
+          border: 2px solid #8e6fff;
+        }
+
+        input[type="checkbox"] {
+          accent-color: #8e6fff;
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+        }
+
+        .role-option {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          margin-right: 0.75rem;
+        }
+
+        .role-icon {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        .gear-toggle {
+          display: flex;
+          align-items: center;
+          gap: 0.2rem;
+          background: rgba(142, 111, 255, 0.1);
+          border: 1px solid rgba(142, 111, 255, 0.3);
+          color: #8e6fff;
+          padding: 0.4rem 0.6rem;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.8rem;
+          transition: all 0.2s;
+          margin-left: auto;
+        }
+
+        .gear-toggle:hover {
+          background: rgba(142, 111, 255, 0.2);
+        }
+
+        .gear-box {
+          background: rgba(30, 30, 30, 0.95);
+          border: 1px solid #444;
+          border-radius: 6px;
+          padding: 0.75rem;
+          margin: 0.4rem 0 0.8rem 1.5rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          max-height: 400px;
+          overflow: hidden;
+          opacity: 1;
+          transform: translateY(0);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gear-box h4 {
+          color: #8e6fff;
+          margin-bottom: 0.6rem;
+          font-size: 0.9rem;
+        }
+
+        .preferences-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          gap: 0.75rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .preference-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(42, 42, 42, 0.7);
+          padding: 0.5rem;
+          border-radius: 4px;
+        }
+
+        .pref-role-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+        }
+
+        .preference-item label {
+          font-size: 0.85rem;
+          min-width: 50px;
+          color: #ccc;
+        }
+
+        .preference-input {
+          width: 50px;
+          padding: 0.2rem 0.4rem;
+          background: #333;
+          border: 1px solid #555;
+          border-radius: 3px;
+          color: #fff;
+          font-size: 0.85rem;
+          text-align: center;
+        }
+
+        .preference-note {
+          font-size: 0.8rem;
+          color: #888;
+          font-style: italic;
+          text-align: center;
+        }
+
+        .drag-handle {
+          display: flex;
+          align-items: center;
+          padding-right: 10px;
+          color: #777;
+          cursor: grab;
+        }
+
+        .drag-icon {
+          font-size: 1.2rem;
+          user-select: none;
+        }
+
+        .new-player {
+          display: flex;
+          align-items: center;
+          border: 2px dashed #444;
+          background-color: rgba(42, 42, 42, 0.5);
+          transition: background-color 0.3s;
+        }
+
+        .new-player:hover {
+          background-color: #2a2a2a;
+        }
+
+        .new-player-input {
+          flex: 1;
+          padding: 0.5rem;
+          background-color: #333;
+          border: 1px solid #444;
+          border-radius: 4px;
+          color: #fff;
+          margin-right: 10px;
+          font-size: 0.9rem;
+        }
+
+        .add-player-btn {
+          background: linear-gradient(to bottom, #8e6fff, #4f34c3);
+          color: white;
+          border: none;
+          border-radius: 4px;
+          padding: 0.5rem 1rem;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.3s;
+        }
+
+        .add-player-btn:hover {
+          background: linear-gradient(to bottom, #9d80ff, #5e43d2);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(79, 52, 195, 0.4);
+        }
+
+        .add-player-btn:active {
+          transform: translateY(1px);
+        }
+
+        .player-output-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem;
+          margin-bottom: 0.75rem;
+          background-color: #2a2a2a;
+          border-radius: 4px;
+          position: relative;
+          background-blend-mode: overlay;
+          transition: transform 0.2s;
+        }
+
+        .player-output-container:hover {
+          transform: translateX(5px);
+        }
+
+        .player-output-container li {
+          list-style: none;
+        }
+
+        .player-name {
+          font-weight: 500;
+        }
+
+        .role-indicators {
+          display: flex;
+          align-items: center;
+        }
+
+        .role-output-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        .empty-state {
+          text-align: center;
+          color: #888;
+          padding: 2rem;
+          font-style: italic;
+        }
+
+        .delete-zone {
+          position: fixed;
+          bottom: -100px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 200px;
+          height: 80px;
+          background-color: #3a0000;
+          border: 2px dashed #ff5252;
+          border-radius: 8px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          color: #ff5252;
+          transition: bottom 0.3s ease-in-out;
+          z-index: 1000;
+        }
+
+        .delete-zone.visible {
+          bottom: 20px;
+        }
+
+        .delete-icon {
+          font-size: 1.5rem;
+          margin-bottom: 5px;
+        }
+
+        .ghost-element {
+          position: absolute;
+          top: -1000px;
+          background-color: #2a2a2a;
+          padding: 5px 10px;
+          border-radius: 4px;
+          color: white;
+          opacity: 0.8;
+        }
+
+        .group-output {
+          margin-bottom: 1.5rem;
+        }
+
+        .group-output h3 {
+          margin-top: 0;
+          margin-bottom: 0.75rem;
+          color: #8e6fff;
+          border-bottom: 1px solid #333;
+          padding-bottom: 0.5rem;
+        }
+
+        .pug-player {
+          background-color: rgba(42, 42, 42, 0.9);
+          border-left: 3px solid #8e6fff;
+        }
+
+        .pug-badge {
+          background-color: #8e6fff;
+          color: #1a1a1a;
+          font-size: 0.7rem;
+          font-weight: bold;
+          padding: 2px 6px;
+          border-radius: 4px;
+          margin-right: 8px;
+        }
+
+        .controls-bar {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background-color: #1a1a1a;
+          border-top: 1px solid #333;
+          padding: 1rem 2rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          max-width: 1500px;
+          margin: 0 auto;
+        }
+
+        .controls-left {
+          display: flex;
+          gap: 2rem;
+          align-items: center;
+        }
+
+        .mode-section h4 {
+          color: #8e6fff;
+          margin-bottom: 0.5rem;
+          font-size: 1rem;
+        }
+
+        .mode-options {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .mode-bubble {
+          display: flex;
+          padding: 0.75rem 1.25rem;
+          background-color: #2a2a2a;
+          border-radius: 25px;
+          border: 2px solid transparent;
+          cursor: pointer;
+          transition: all 0.2s;
+          position: relative;
+        }
+
+        .mode-bubble.selected {
+          border-color: #8e6fff;
+          background-color: rgba(142, 111, 255, 0.1);
+        }
+
+        .mode-bubble input {
+          display: none;
+        }
+
+        .bubble-text {
+          font-size: 0.9rem;
+          font-weight: 500;
+        }
+
+        .rotation-section h4 {
+          color: #8e6fff;
+          margin-bottom: 0.5rem;
+          font-size: 1rem;
+        }
+
+        .rotation-toggle {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          cursor: pointer;
+        }
+
+        .toggle-slider {
+          position: relative;
+          width: 50px;
+          height: 26px;
+          background: #444;
+          border-radius: 13px;
+          transition: background-color 0.3s;
+        }
+
+        .toggle-slider::before {
+          content: '';
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 22px;
+          height: 22px;
+          background: white;
+          border-radius: 50%;
+          transition: transform 0.3s;
+        }
+
+        .rotation-toggle input[type="checkbox"] {
+          display: none;
+        }
+
+        .rotation-toggle input[type="checkbox"]:checked + .toggle-slider {
+          background: #8e6fff;
+        }
+
+        .rotation-toggle input[type="checkbox"]:checked + .toggle-slider::before {
+          transform: translateX(24px);
+        }
+
+        .toggle-text {
+          font-size: 0.9rem;
+          font-weight: 500;
+        }
+
+        .create-groups-btn {
+          padding: 0.8rem 2rem;
+          background: linear-gradient(to bottom, #8e6fff, #4f34c3);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 1.1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .create-groups-btn:hover {
+          background: linear-gradient(to bottom, #9d80ff, #5e43d2);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(79, 52, 195, 0.4);
+        }
+
+        .create-groups-btn:active {
+          transform: translateY(1px);
+        }
+
+        .create-groups-btn:disabled {
+          background-color: #555;
+          cursor: not-allowed;
+          opacity: 0.7;
+          transform: none;
+          box-shadow: none;
+        }
+
+        .dice-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 300px;
+        }
+
+        .dice {
+          position: relative;
+          width: 100px;
+          height: 100px;
+          transform-style: preserve-3d;
+          animation: rolling 2s linear infinite;
+        }
+
+        .dice-face {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 10px;
+          background: rgba(142, 111, 255, 0.8);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .dot {
+          position: absolute;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #fff;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .center { top: 42px; left: 42px; }
+        .top-left { top: 16px; left: 16px; }
+        .top-right { top: 16px; right: 16px; }
+        .bottom-left { bottom: 16px; left: 16px; }
+        .bottom-right { bottom: 16px; right: 16px; }
+        .middle-left { top: 42px; left: 16px; }
+        .middle-right { top: 42px; right: 16px; }
+
+        .one { transform: translateZ(50px); }
+        .two { transform: rotateY(180deg) translateZ(50px); }
+        .three { transform: rotateY(90deg) translateZ(50px); }
+        .four { transform: rotateY(-90deg) translateZ(50px); }
+        .five { transform: rotateX(90deg) translateZ(50px); }
+        .six { transform: rotateX(-90deg) translateZ(50px); }
+
+        @keyframes rolling {
+          0% { transform: rotateX(0deg) rotateY(0deg); }
+          25% { transform: rotateX(90deg) rotateY(180deg); }
+          50% { transform: rotateX(180deg) rotateY(90deg); }
+          75% { transform: rotateX(270deg) rotateY(270deg); }
+          100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        .dice-text {
+          margin-top: 20px;
+          font-size: 18px;
+          font-weight: 500;
+          color: #8e6fff;
+          animation: pulse-text 1.5s infinite;
+        }
+
+        @keyframes pulse-text {
+          0% { opacity: 0.6; }
+          50% { opacity: 1; }
+          100% { opacity: 0.6; }
+        }
+      ` }} />
+      
       <div className="app-header">
         <h1 className="title">
           <span className="title-thursday">Thursday</span>
