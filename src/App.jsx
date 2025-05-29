@@ -877,6 +877,30 @@ function App() {
           background-color: #242424;
           color: rgba(255, 255, 255, 0.87);
           line-height: 1.5;
+          margin: 0;
+          padding: 0;
+          padding-bottom: 120px;
+        }
+
+        #root {
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          text-align: center;
+        }
+
+        .app-container {
+          width: 100%;
+          min-height: 100vh;
+          padding: 2rem;
+          box-sizing: border-box;
+        }
+
+        @media (min-width: 1600px) {
+          .app-container {
+            max-width: 1500px;
+            margin: 0 auto;
+          }
         }
 
         .app-header {
@@ -964,9 +988,12 @@ function App() {
           display: flex;
           flex-direction: row;
           gap: 2rem;
-          margin: 2rem auto;
+          margin: 2rem 0;
           min-height: 70vh;
-          width: 1500px;
+          width: 100%;
+          max-width: 1500px;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .input-container {
@@ -1351,8 +1378,300 @@ function App() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .controls-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
           max-width: 1500px;
           margin: 0 auto;
+          padding: 0 2rem;
+          box-sizing: border-box;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1600px) {
+          .app-container {
+            padding: 2rem;
+          }
+          
+          .content-container {
+            margin: 2rem 0;
+          }
+        }
+
+        @media (max-width: 1200px) {
+          .app-container {
+            padding: 1.5rem;
+          }
+          
+          .content-container {
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+          }
+          
+          .input-container, .output-container {
+            padding: 1.25rem;
+          }
+          
+          .title {
+            font-size: 2.5rem;
+          }
+          
+          .title-plus {
+            font-size: 3rem;
+          }
+        }
+
+        @media (max-width: 1480px) {
+          .content-container {
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1rem auto;
+            min-height: auto;
+            max-width: min(920px, calc(100vw - 2rem));
+            width: 100%;
+          }
+          
+          .input-container, .output-container {
+            flex: 1;
+            max-height: none;
+            width: 100%;
+          }
+          
+          .input-container {
+            max-height: 60vh;
+            overflow-y: auto;
+          }
+          
+          .output-container {
+            max-height: 50vh;
+            overflow-y: auto;
+          }
+        }
+
+        @media (max-width: 1200px) {
+          .app-container {
+            padding: max(1rem, 1.5vw);
+          }
+          
+          .content-container {
+            margin: max(0.75rem, 1.2vw) auto;
+            gap: max(0.75rem, 1vw);
+            max-width: min(920px, calc(100vw - 2 * max(1rem, 1.5vw)));
+          }
+        }
+
+        @media (max-width: 920px) {
+          .app-container {
+            padding: 1rem;
+          }
+          
+          .content-container {
+            max-width: calc(100vw - 2rem);
+            margin: 1rem 0;
+          }
+        }
+
+        @media (max-width: 992px) {
+          .app-container {
+            padding: 1rem;
+          }
+          
+          .controls-bar {
+            padding: 1rem;
+          }
+          
+          .controls-content {
+            padding: 0 1rem;
+          }
+          
+          .controls-left {
+            gap: 1.5rem;
+          }
+          
+          .mode-options {
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+          
+          .mode-bubble {
+            padding: 0.5rem 1rem;
+            text-align: center;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .app-container {
+            padding: 0.5rem;
+          }
+          
+          .content-container {
+            margin: 0.5rem 0;
+            gap: 0.75rem;
+            max-width: calc(100vw - 1rem);
+          }
+          
+          .input-container, .output-container {
+            padding: 1rem;
+          }
+          
+          .player-input-container {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.5rem;
+          }
+          
+          .player-input-container li {
+            min-width: 80px;
+            font-size: 0.85rem;
+          }
+          
+          .role-icon {
+            width: 28px;
+            height: 28px;
+          }
+          
+          .preferences-grid {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+          }
+          
+          .gear-box {
+            margin-left: 0;
+            padding: 0.6rem;
+          }
+          
+          .title {
+            font-size: 2rem;
+          }
+          
+          .title-plus {
+            font-size: 2.5rem;
+          }
+          
+          .controls-bar {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 0.75rem;
+          }
+          
+          .controls-content {
+            flex-direction: column;
+            gap: 1rem;
+            padding: 0;
+          }
+          
+          .controls-left {
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+          }
+          
+          .mode-section, .rotation-section {
+            width: 100%;
+            text-align: center;
+          }
+          
+          .create-groups-btn {
+            width: 100%;
+            padding: 1rem;
+            max-width: none;
+          }
+          
+          .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+          }
+          
+          .reset-rotation-btn {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .app-container {
+            padding: 0.25rem;
+          }
+          
+          .content-container {
+            margin: 0.25rem 0;
+            max-width: calc(100vw - 0.5rem);
+          }
+          
+          .input-container, .output-container {
+            padding: 0.75rem;
+          }
+          
+          .player-input-container {
+            padding: 0.4rem;
+            gap: 0.4rem;
+          }
+          
+          .player-input-container li {
+            min-width: 70px;
+            font-size: 0.8rem;
+          }
+          
+          .role-icon {
+            width: 24px;
+            height: 24px;
+          }
+          
+          .gear-toggle {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.75rem;
+          }
+          
+          .title {
+            font-size: 1.5rem;
+            padding: 0.4rem 1rem;
+          }
+          
+          .title-plus {
+            font-size: 2rem;
+          }
+          
+          .preference-item {
+            padding: 0.4rem;
+            gap: 0.4rem;
+          }
+          
+          .preference-input {
+            width: 45px;
+            padding: 0.15rem 0.3rem;
+            font-size: 0.8rem;
+          }
+          
+          .pref-role-icon {
+            width: 20px;
+            height: 20px;
+          }
+          
+          .controls-bar {
+            padding: 0.5rem;
+          }
+          
+          .mode-bubble {
+            padding: 0.6rem;
+          }
+          
+          .bubble-text {
+            font-size: 0.85rem;
+          }
+        }
+
+        /* Ensure content doesn't get hidden behind fixed controls */
+        @media (max-width: 768px) {
+          body {
+            padding-bottom: 160px;
+          }
         }
 
         .controls-left {
@@ -1449,7 +1768,7 @@ function App() {
         }
 
         .create-groups-btn {
-          padding: 0.8rem 2rem;
+          padding: 0.8rem 1.5rem;
           background: linear-gradient(to bottom, #8e6fff, #4f34c3);
           color: white;
           border: none;
@@ -1458,6 +1777,8 @@ function App() {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s;
+          min-width: 180px;
+          max-width: 280px;
         }
 
         .create-groups-btn:hover {
@@ -1553,139 +1874,143 @@ function App() {
         }
       ` }} />
       
-      <div className="app-header">
-        <h1 className="title">
-          <span className="title-thursday">Thursday</span>
-          <span className="title-plus">M+</span>
-          <div className="title-glow"></div>
-        </h1>
-      </div>
-      
-      {/* Delete zone that appears when dragging */}
-      <div 
-        className={`delete-zone ${isDragging ? 'visible' : ''}`}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
-        <div className="delete-icon">🗑️</div>
-        <div>Drop to delete</div>
-      </div>
-      
-      <div className="content-container">
-        <div className='input-container'>
-          <div className="section-header">
-            <h2>Compadres</h2>
-            {rotationMode && (
+      <div className="app-container">
+        <div className="app-header">
+          <h1 className="title">
+            <span className="title-thursday">Thursday</span>
+            <span className="title-plus">M+</span>
+            <div className="title-glow"></div>
+          </h1>
+        </div>
+        
+        {/* Delete zone that appears when dragging */}
+        <div 
+          className={`delete-zone ${isDragging ? 'visible' : ''}`}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+          <div className="delete-icon">🗑️</div>
+          <div>Drop to delete</div>
+        </div>
+        
+        <div className="content-container">
+          <div className='input-container'>
+            <div className="section-header">
+              <h2>Compadres</h2>
+              {rotationMode && (
+                <button 
+                  className="reset-rotation-btn"
+                  onClick={resetRotation}
+                  title="Reset role rotation for all players"
+                >
+                  <RotateCcw size={16} />
+                  Reset Rotation
+                </button>
+              )}
+            </div>
+            
+            {players.map((player, index) => (
+              <PlayerRow
+                key={index}
+                player={player}
+                index={index}
+                rotationMode={rotationMode}
+                expandedGearBoxes={expandedGearBoxes}
+                draggedIndex={draggedIndex}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onRoleToggle={handleRoleToggle}
+                onToggleGearBox={toggleGearBox}
+                onPreferenceChange={handlePreferenceChange}
+              />
+            ))}
+            
+            {/* Add new player component */}
+            <div className='player-input-container new-player'>
+              <input
+                type="text"
+                placeholder="New player name"
+                value={newPlayerName}
+                onChange={(e) => setNewPlayerName(e.target.value)}
+                className="new-player-input"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddPlayer()
+                }}
+              />
               <button 
-                className="reset-rotation-btn"
-                onClick={resetRotation}
-                title="Reset role rotation for all players"
+                onClick={handleAddPlayer}
+                className="add-player-btn"
               >
-                <RotateCcw size={16} />
-                Reset Rotation
+                Add Player
               </button>
-            )}
+            </div>
           </div>
           
-          {players.map((player, index) => (
-            <PlayerRow
-              key={index}
-              player={player}
-              index={index}
-              rotationMode={rotationMode}
-              expandedGearBoxes={expandedGearBoxes}
-              draggedIndex={draggedIndex}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onRoleToggle={handleRoleToggle}
-              onToggleGearBox={toggleGearBox}
-              onPreferenceChange={handlePreferenceChange}
-            />
-          ))}
-          
-          {/* Add new player component */}
-          <div className='player-input-container new-player'>
-            <input
-              type="text"
-              placeholder="New player name"
-              value={newPlayerName}
-              onChange={(e) => setNewPlayerName(e.target.value)}
-              className="new-player-input"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAddPlayer()
-              }}
-            />
+          <div className='output-container'>
+            <h2>Groups</h2>
+            
+            {isLoading ? (
+              <DiceAnimation />
+            ) : (
+              <GroupDisplay groups={groups} />
+            )}
+          </div>
+        </div>
+        
+        {/* Horizontal controls bar */}
+        <div className="controls-bar">
+          <div className="controls-content">
+            <div className="controls-left">
+              <div className="mode-section">
+                <h4>Distribution:</h4>
+                <div className="mode-options">
+                  <label className={`mode-bubble ${groupMode === 'even' ? 'selected' : ''}`}>
+                    <input 
+                      type="radio" 
+                      name="groupMode" 
+                      value="even"
+                      checked={groupMode === 'even'}
+                      onChange={() => setGroupMode('even')}
+                    />
+                    <span className="bubble-text">Even Groups</span>
+                  </label>
+                  
+                  <label className={`mode-bubble ${groupMode === 'random' ? 'selected' : ''}`}>
+                    <input 
+                      type="radio" 
+                      name="groupMode" 
+                      value="random"
+                      checked={groupMode === 'random'}
+                      onChange={() => setGroupMode('random')}
+                    />
+                    <span className="bubble-text">Random</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="rotation-section">
+                <h4>Rotation:</h4>
+                <label className="rotation-toggle">
+                  <input 
+                    type="checkbox"
+                    checked={rotationMode}
+                    onChange={(e) => setRotationMode(e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                  <span className="toggle-text">Role Rotation</span>
+                </label>
+              </div>
+            </div>
+            
             <button 
-              onClick={handleAddPlayer}
-              className="add-player-btn"
+              className="create-groups-btn"
+              onClick={createGroups}
+              disabled={players.length < 1 || isLoading}
             >
-              Add Player
+              {isLoading ? "Rolling..." : "Create Groups"}
             </button>
           </div>
         </div>
-        
-        <div className='output-container'>
-          <h2>Groups</h2>
-          
-          {isLoading ? (
-            <DiceAnimation />
-          ) : (
-            <GroupDisplay groups={groups} />
-          )}
-        </div>
-      </div>
-      
-      {/* Horizontal controls bar */}
-      <div className="controls-bar">
-        <div className="controls-left">
-          <div className="mode-section">
-            <h4>Distribution:</h4>
-            <div className="mode-options">
-              <label className={`mode-bubble ${groupMode === 'even' ? 'selected' : ''}`}>
-                <input 
-                  type="radio" 
-                  name="groupMode" 
-                  value="even"
-                  checked={groupMode === 'even'}
-                  onChange={() => setGroupMode('even')}
-                />
-                <span className="bubble-text">Even Groups</span>
-              </label>
-              
-              <label className={`mode-bubble ${groupMode === 'random' ? 'selected' : ''}`}>
-                <input 
-                  type="radio" 
-                  name="groupMode" 
-                  value="random"
-                  checked={groupMode === 'random'}
-                  onChange={() => setGroupMode('random')}
-                />
-                <span className="bubble-text">Random</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="rotation-section">
-            <h4>Rotation:</h4>
-            <label className="rotation-toggle">
-              <input 
-                type="checkbox"
-                checked={rotationMode}
-                onChange={(e) => setRotationMode(e.target.checked)}
-              />
-              <span className="toggle-slider"></span>
-              <span className="toggle-text">Role Rotation</span>
-            </label>
-          </div>
-        </div>
-        
-        <button 
-          className="create-groups-btn"
-          onClick={createGroups}
-          disabled={players.length < 1 || isLoading}
-        >
-          {isLoading ? "Rolling..." : "Create Groups"}
-        </button>
       </div>
     </>
   )
