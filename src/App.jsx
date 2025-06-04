@@ -1,5 +1,213 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Settings, RotateCcw } from 'lucide-react'
+import './App.css'
+
+// Component: Hard Mode Slot Machine
+const HardModeSlotMachine = ({ isVisible, onComplete }) => {
+  const [currentSlots, setCurrentSlots] = useState([0, 0, 0])
+  const [isSpinning, setIsSpinning] = useState(false)
+  const [finalChallenge, setFinalChallenge] = useState(null)
+
+  // Hard Mode Challenges
+  const challenges = [
+    {
+      title: "Interrupt Olympics",
+      description: "Most interrupts wins 100g from each player! Time to show off those reflexes.",
+      emoji: "🛑",
+      icon: "⛔"
+    },
+    {
+      title: "Death Tax Collector",
+      description: "Most deaths pays 50g to everyone else! Stay alive or pay up.",
+      emoji: "💀",
+      icon: "⚰️"
+    },
+    {
+      title: "Compliment Your PUG",
+      description: "Give your pug teammate genuine compliments all run! Spread the love.",
+      emoji: "🤝",
+      icon: "❤️"
+    },
+    {
+      title: "Damage Meter Flask Fund",
+      description: "Lowest overall DPS buys everyone flasks! No pressure...",
+      emoji: "📊",
+      icon: "🧪"
+    },
+    {
+      title: "First to Fall Lottery",
+      description: "First player to die owes 200g to the pot - survivors split it!",
+      emoji: "🎰",
+      icon: "💰"
+    },
+    {
+      title: "Accidental Comedian",
+      description: "Every time you mess up a mechanic, tell a dad joke in chat!",
+      emoji: "🤡",
+      icon: "😂"
+    },
+    {
+      title: "DPS Ends in 4 Feast",
+      description: "If your overall DPS ends with the number 4, you buy everyone a feast!",
+      emoji: "4️⃣",
+      icon: "🍖"
+    },
+    {
+      title: "Dispel Derby",
+      description: "If your dispells end in 7, you win! Other players pay 75g to the cleanse champion.",
+      emoji: "✨",
+      icon: "🧼"
+    },
+    {
+      title: "Pet Battle Royale Prep",
+      description: "Summon random battle pets between pulls! Most adorable pet wins hearts.",
+      emoji: "🐾",
+      icon: "🐕"
+    },
+    {
+      title: "Transmog Fashion Show",
+      description: "Rate each other's transmog 1-10! Lowest score buys winner a token.",
+      emoji: "👗",
+      icon: "✨"
+    },
+    {
+      title: "Deaths End in 7 Penalty",
+      description: "If your death count ends with 7, you owe everyone 100g each!",
+      emoji: "7️⃣",
+      icon: "💀"
+    },
+    {
+      title: "HPS Ends in 9 Jackpot",
+      description: "If healer's HPS ends with 9, everyone else owes them 50g!",
+      emoji: "9️⃣",
+      icon: "💚"
+    },
+    {
+      title: "Helpful Tip Exchange",
+      description: "Share your best M+ tip! Most helpful tip earns gold from grateful friends.",
+      emoji: "💡",
+      icon: "🧠"
+    },
+    {
+      title: "Sexy Transmog Contest",
+      description: "Everyone must transmog to look as sexy as possible! Vote for hottest look.",
+      emoji: "💋",
+      icon: "🔥"
+    },
+    {
+      title: "Cute Transmog Contest",
+      description: "Everyone must transmog to look adorable! Cutest outfit wins gold from others.",
+      emoji: "🥰",
+      icon: "😊"
+    },
+    {
+      title: "Ugly Transmog Contest",
+      description: "Everyone must transmog to look hideous! Most disgusting look wins the pot.",
+      emoji: "🤮",
+      icon: "👹"
+    },
+    {
+      title: "Scary Transmog Contest",
+      description: "Everyone must transmog to look terrifying! Spookiest outfit gets gold rewards.",
+      emoji: "👻",
+      icon: "😱"
+    },
+    {
+      title: "Royal Transmog Contest",
+      description: "Everyone must transmog to look like royalty! Most regal appearance wins tribute.",
+      emoji: "👑",
+      icon: "🏰"
+    }
+  ]
+
+  const slotSymbols = challenges.map(c => c.icon)
+
+  useState(() => {
+    if (isVisible && !isSpinning) {
+      setIsSpinning(true)
+      
+      // Spin animation
+      const spinInterval = setInterval(() => {
+        setCurrentSlots([
+          Math.floor(Math.random() * slotSymbols.length),
+          Math.floor(Math.random() * slotSymbols.length),
+          Math.floor(Math.random() * slotSymbols.length)
+        ])
+      }, 100)
+
+      // Stop spinning after 2 seconds and select final challenge
+      setTimeout(() => {
+        clearInterval(spinInterval)
+        const selectedChallenge = challenges[Math.floor(Math.random() * challenges.length)]
+        setFinalChallenge(selectedChallenge)
+        setIsSpinning(false)
+        
+        // Show challenge immediately above groups
+        onComplete(selectedChallenge)
+        
+        // Hide slot machine after a shorter delay
+        setTimeout(() => {
+          // Slot machine will hide when onComplete sets showHardModeSlots to false
+        }, 800)
+      }, 2000)
+    }
+  }, [isVisible])
+
+  if (!isVisible) return null
+
+  return (
+    <div className="hard-mode-overlay">
+      <div className="slot-machine">
+        <div className="slot-machine-header">
+          <h3>🎰 HARD MODE ACTIVATED 🎰</h3>
+          <p>Rolling for your challenge...</p>
+        </div>
+        
+        <div className="slot-container">
+          <div className="slot-reel">
+            <div className="slot-symbol">{slotSymbols[currentSlots[0]]}</div>
+          </div>
+          <div className="slot-reel">
+            <div className="slot-symbol">{slotSymbols[currentSlots[1]]}</div>
+          </div>
+          <div className="slot-reel">
+            <div className="slot-symbol">{slotSymbols[currentSlots[2]]}</div>
+          </div>
+        </div>
+
+        {finalChallenge && !isSpinning && (
+          <div className="challenge-result">
+            <div className="challenge-emoji">{finalChallenge.emoji}</div>
+            <div className="challenge-title">{finalChallenge.title}</div>
+            <div className="challenge-description">{finalChallenge.description}</div>
+          </div>
+        )}
+        
+        <div className="slot-machine-footer">
+          {isSpinning ? "🎲 Rolling..." : finalChallenge ? "Challenge Assigned!" : "🎲 Rolling..."}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Component: Hard Mode Challenge Display
+const HardModeChallenge = ({ challenge }) => {
+  if (!challenge) return null
+
+  return (
+    <div className="hard-mode-challenge">
+      <div className="challenge-header">
+        <span className="challenge-emoji">{challenge.emoji}</span>
+        <h3>🎲 HARD MODE 🎲</h3>
+      </div>
+      <div className="challenge-content">
+        <div className="challenge-title">{challenge.title}</div>
+        <div className="challenge-description">{challenge.description}</div>
+      </div>
+    </div>
+  )
+}
 
 // Component: Role preference gear box
 const GearBox = ({ player, playerIndex, onPreferenceChange }) => {
@@ -123,7 +331,7 @@ const PlayerRow = ({
           </div>
         ))}
         
-        {/* Used roles indicator in rotation mode - now below the main row */}
+        {/* Used roles indicator in rotation mode */}
         {rotationMode && player.usedRoles && player.usedRoles.length > 0 && (
           <div className="used-roles">
             <span className="used-roles-text">Used: </span>
@@ -164,7 +372,7 @@ const PlayerRow = ({
 }
 
 // Component: Group display
-const GroupDisplay = ({ groups }) => {
+const GroupDisplay = ({ groups, hardModeChallenge }) => {
   const getRoleIcon = (role) => {
     const roles = [
       {
@@ -198,6 +406,9 @@ const GroupDisplay = ({ groups }) => {
 
   return (
     <>
+      {/* Hard Mode Challenge Display */}
+      <HardModeChallenge challenge={hardModeChallenge} />
+      
       {groups.map((group, groupIndex) => (
         <div className='group-output' key={groupIndex}>
           <h3>Group {groupIndex + 1} ({group.filter(p => !p.isPug).length} players)</h3>
@@ -230,8 +441,8 @@ const GroupDisplay = ({ groups }) => {
   )
 }
 
-// Component: Loading dice animation
-const DiceAnimation = () => {
+// Component: Loading dice animation with hard mode
+const DiceAnimation = ({ showHardMode, onHardModeComplete }) => {
   return (
     <div className="dice-container">
       <div className="dice">
@@ -270,6 +481,12 @@ const DiceAnimation = () => {
         </div>
       </div>
       <p className="dice-text">Creating groups...</p>
+      
+      {/* Hard Mode Slot Machine Overlay */}
+      <HardModeSlotMachine 
+        isVisible={showHardMode}
+        onComplete={onHardModeComplete}
+      />
     </div>
   )
 }
@@ -334,18 +551,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [rotationMode, setRotationMode] = useState(false)
   const [expandedGearBoxes, setExpandedGearBoxes] = useState({})
-
-  // Add CSS styles directly to the component
-  const styles = `
-    body {
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      background-color: #242424;
-      color: rgba(255, 255, 255, 0.87);
-      line-height: 1.5;
-      margin: 0;
-      padding: 0;
-    }
-  `
+  const [hardModeEnabled, setHardModeEnabled] = useState(false)
+  const [showHardModeSlots, setShowHardModeSlots] = useState(false)
+  const [currentHardModeChallenge, setCurrentHardModeChallenge] = useState(null)
 
   // Random PUG names
   const pugNames = [
@@ -371,7 +579,6 @@ function App() {
     setIsDragging(true)
     setDraggedIndex(index)
     e.dataTransfer.setData('text/plain', index)
-    // Add a ghost image for drag
     const ghostElement = document.createElement('div')
     ghostElement.classList.add('ghost-element')
     ghostElement.textContent = players[index].name
@@ -397,10 +604,8 @@ function App() {
         const newPlayers = [...players]
         newPlayers.splice(draggedIndex, 1)
         setPlayers(newPlayers)
-        // Also remove from expandedGearBoxes
         const newExpanded = {...expandedGearBoxes}
         delete newExpanded[draggedIndex]
-        // Shift indices for remaining players
         const shiftedExpanded = {}
         Object.keys(newExpanded).forEach(key => {
           const numKey = parseInt(key)
@@ -425,7 +630,6 @@ function App() {
       })
     }
     
-    // Set inactive roles to 0
     Object.keys(player.preferences).forEach(role => {
       if (!activeRoles.includes(role)) {
         player.preferences[role] = 0
@@ -438,20 +642,15 @@ function App() {
     const playerRoles = newPlayers[playerIndex].roles || []
     
     if (playerRoles.includes(role)) {
-      // Remove role if already selected
       newPlayers[playerIndex].roles = playerRoles.filter(r => r !== role)
-      // Reset preference for removed role
       newPlayers[playerIndex].preferences[role] = 0
     } else {
-      // Add role if not already selected
       newPlayers[playerIndex].roles = [...playerRoles, role]
-      // Set default preference
       const currentRoles = [...playerRoles, role]
       const defaultPref = Math.floor(100 / currentRoles.length)
       newPlayers[playerIndex].preferences[role] = defaultPref
     }
     
-    // Normalize preferences to sum to 100
     normalizePreferences(newPlayers[playerIndex])
     setPlayers(newPlayers)
   }
@@ -461,36 +660,28 @@ function App() {
     const player = newPlayers[playerIndex]
     const numValue = Math.max(0, Math.min(100, parseInt(value) || 0))
     
-    // Get all active roles for this player
     const activeRoles = player.roles || []
     const otherActiveRoles = activeRoles.filter(r => r !== role)
     
-    // Set the new value for the changed role
     player.preferences[role] = numValue
     
-    // Calculate remaining percentage to distribute
     const remaining = 100 - numValue
     
     if (remaining <= 0) {
-      // If the new value is 100% or more, set all other roles to 0
       otherActiveRoles.forEach(r => player.preferences[r] = 0)
     } else if (otherActiveRoles.length > 0) {
-      // Calculate current total of other active roles
       const othersTotal = otherActiveRoles.reduce((sum, r) => sum + (player.preferences[r] || 0), 0)
       
       if (othersTotal === 0) {
-        // If other roles are 0, distribute equally
         const equalShare = Math.floor(remaining / otherActiveRoles.length)
         const remainder = remaining % otherActiveRoles.length
         otherActiveRoles.forEach((r, index) => {
           player.preferences[r] = equalShare + (index < remainder ? 1 : 0)
         })
       } else {
-        // Distribute remaining percentage proportionally among other active roles
         let distributedSoFar = 0
         otherActiveRoles.forEach((r, index) => {
           if (index === otherActiveRoles.length - 1) {
-            // Last role gets whatever is left to avoid rounding errors
             player.preferences[r] = remaining - distributedSoFar
           } else {
             const proportion = (player.preferences[r] || 0) / othersTotal
@@ -502,7 +693,6 @@ function App() {
       }
     }
     
-    // Ensure inactive roles stay at 0
     Object.keys(player.preferences).forEach(r => {
       if (!activeRoles.includes(r)) {
         player.preferences[r] = 0
@@ -527,7 +717,6 @@ function App() {
     setPlayers(newPlayers)
   }
 
-  // Get a random PUG player
   const getRandomPUG = (role) => {
     const randomName = pugNames[Math.floor(Math.random() * pugNames.length)]
     return {
@@ -538,27 +727,21 @@ function App() {
     }
   }
 
-  // Weighted role selection based on preferences and rotation mode
   const selectRoleForPlayer = (player, neededRoles) => {
     let availableRoles = player.roles.filter(role => neededRoles.includes(role))
     
-    // In rotation mode, exclude already used roles
     if (rotationMode) {
       const usedRoles = player.usedRoles || []
       const unusedRoles = availableRoles.filter(role => !usedRoles.includes(role))
       
-      // If there are unused roles, use those
       if (unusedRoles.length > 0) {
         availableRoles = unusedRoles
       } else {
-        // If all roles have been used, check if ALL player's roles have been exhausted
         const allRolesUsed = player.roles.every(playerRole => usedRoles.includes(playerRole))
         
         if (allRolesUsed) {
-          // Reset cycle - player can play any of their roles again
           availableRoles = player.roles.filter(role => neededRoles.includes(role))
         } else {
-          // Still have unused roles for other positions, but none for this needed role
           return null
         }
       }
@@ -567,17 +750,14 @@ function App() {
     if (availableRoles.length === 0) return null
     if (availableRoles.length === 1) return availableRoles[0]
     
-    // Weighted selection based on preferences
     const preferences = player.preferences || {}
-    const weights = availableRoles.map(role => Math.max(preferences[role] || 1, 1)) // Minimum weight of 1
+    const weights = availableRoles.map(role => Math.max(preferences[role] || 1, 1))
     const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
     
     if (totalWeight === 0) {
-      // If no preferences set, choose randomly
       return availableRoles[Math.floor(Math.random() * availableRoles.length)]
     }
     
-    // Weighted random selection
     let random = Math.random() * totalWeight
     for (let i = 0; i < availableRoles.length; i++) {
       random -= weights[i]
@@ -586,66 +766,61 @@ function App() {
       }
     }
     
-    return availableRoles[0] // Fallback
+    return availableRoles[0]
+  }
+
+  const handleHardModeComplete = (challenge) => {
+    setShowHardModeSlots(false)
+    setCurrentHardModeChallenge(challenge)
   }
 
   const createGroups = () => {
-    // Validate: each player must have at least one role
     const invalidPlayers = players.filter(player => !player.roles || player.roles.length === 0)
     if (invalidPlayers.length > 0) {
       alert(`Please select at least one role for: ${invalidPlayers.map(p => p.name).join(', ')}`)
       return
     }
 
-    // Show loading animation
     setIsLoading(true)
+    setCurrentHardModeChallenge(null)
     
-    // Use setTimeout to create a slight delay for the animation
+    // Show hard mode slots if enabled
+    if (hardModeEnabled) {
+      setTimeout(() => {
+        setShowHardModeSlots(true)
+      }, 800)
+    }
+    
     setTimeout(() => {
-      // Create a working copy of players
       const playerPool = [...players]
-      
-      // Analyze the players and determine optimal number of groups
       const finalGroups = generateOptimalGroups(playerPool)
-      
-      // Set the final groups
       setGroups(finalGroups)
-      
-      // Hide loading animation
       setIsLoading(false)
     }, 1500)
   }
 
   const generateOptimalGroups = (playerPool) => {
-    // Shuffle the player pool to add randomness and prevent same assignments
     const shuffledPlayerPool = [...playerPool].sort(() => Math.random() - 0.5)
     
-    // Calculate how many groups we need based on player count
     const totalPlayers = shuffledPlayerPool.length
     
-    // Calculate the ideal number of groups based on player count
     let idealGroups = Math.ceil(totalPlayers / 5)
     
-    // If we have 6 or more players, we should create at least 2 groups
     if (totalPlayers >= 6) {
       idealGroups = Math.max(2, idealGroups)
     }
     
     const numGroups = idealGroups
     
-    // Initialize the groups
     const groups = Array(numGroups).fill().map(() => [])
     
-    // Track assigned players
     const assignedPlayers = new Set()
     const newUsedRoles = {}
     
-    // Initialize used roles tracking for rotation mode
     shuffledPlayerPool.forEach(player => {
       newUsedRoles[player.name] = [...(player.usedRoles || [])]
     })
 
-    // Helper function to assign player to group with role
     const assignPlayerToGroup = (player, groupIndex, role) => {
       groups[groupIndex].push({...player, assignedRole: role})
       assignedPlayers.add(player.name)
@@ -654,32 +829,23 @@ function App() {
       }
     }
 
-    // Helper function to get available players for a role
     const getAvailablePlayersForRole = (role) => {
       return shuffledPlayerPool.filter(p => {
-        // Must not be already assigned
         if (assignedPlayers.has(p.name)) return false
         
-        // Must have the role
         if (!p.roles.includes(role)) return false
         
-        // In rotation mode, check if role has been used
         if (rotationMode) {
           const usedRoles = p.usedRoles || []
-          // If this role hasn't been used, they can play it
           if (!usedRoles.includes(role)) return true
           
-          // If this role HAS been used, check if ALL their roles have been used
           const allRolesUsed = p.roles.every(playerRole => usedRoles.includes(playerRole))
           
-          // If all roles have been used, reset and allow any role
           if (allRolesUsed) {
-            // Reset this player's used roles for the next cycle
             newUsedRoles[p.name] = []
             return true
           }
           
-          // Otherwise, they can't play this role yet
           return false
         }
         
@@ -687,21 +853,17 @@ function App() {
       })
     }
 
-    // Helper function to select a player based on weighted preferences
     const selectPlayerByPreference = (availablePlayers, role) => {
       if (availablePlayers.length === 0) return null
       if (availablePlayers.length === 1) return availablePlayers[0]
       
-      // Create weights based on preferences
       const weights = availablePlayers.map(player => {
         const preference = player.preferences?.[role] || 0
-        // If preference is 0, give a small base weight so they can still be selected
-        return Math.max(preference, 5) // Minimum weight of 5 for fairness
+        return Math.max(preference, 5)
       })
       
       const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
       
-      // Weighted random selection
       let random = Math.random() * totalWeight
       for (let i = 0; i < availablePlayers.length; i++) {
         random -= weights[i]
@@ -710,13 +872,11 @@ function App() {
         }
       }
       
-      return availablePlayers[0] // Fallback
+      return availablePlayers[0]
     }
 
     // Phase 1: Assign required roles (Tank and Healer) to each group
-    // First pass: Try to assign tanks and healers optimally
     for (let groupIndex = 0; groupIndex < numGroups; groupIndex++) {
-      // Assign Tank using weighted selection
       const availableTanks = getAvailablePlayersForRole("Tank")
       
       if (availableTanks.length > 0) {
@@ -726,7 +886,6 @@ function App() {
         }
       }
 
-      // Assign Healer using weighted selection
       const availableHealers = getAvailablePlayersForRole("Healer")
       
       if (availableHealers.length > 0) {
@@ -737,13 +896,12 @@ function App() {
       }
     }
 
-    // Second pass: Fill any missing tanks or healers by reassigning flexible players
+    // Phase 2: Fill any missing tanks or healers
     for (let groupIndex = 0; groupIndex < numGroups; groupIndex++) {
       const currentGroup = groups[groupIndex]
       const hasTank = currentGroup.some(p => p.assignedRole === "Tank")
       const hasHealer = currentGroup.some(p => p.assignedRole === "Healer")
       
-      // If missing tank, try to find flexible players who can tank
       if (!hasTank) {
         const flexTanks = getAvailablePlayersForRole("Tank")
         
@@ -755,7 +913,6 @@ function App() {
         }
       }
       
-      // If missing healer, try to find flexible players who can heal
       if (!hasHealer) {
         const flexHealers = getAvailablePlayersForRole("Healer")
         
@@ -768,13 +925,12 @@ function App() {
       }
     }
 
-    // Phase 2: Assign Support (optional, only if available and composition allows)
+    // Phase 3: Assign Support (optional)
     for (let groupIndex = 0; groupIndex < numGroups; groupIndex++) {
       const currentGroup = groups[groupIndex]
       const hasTank = currentGroup.some(p => p.assignedRole === "Tank")
       const hasHealer = currentGroup.some(p => p.assignedRole === "Healer")
       
-      // Only add support if we have the required tank and healer
       if (hasTank && hasHealer) {
         const availableSupports = getAvailablePlayersForRole("Support")
         
@@ -787,65 +943,56 @@ function App() {
       }
     }
 
-    // Phase 3: Fill remaining slots with DPS
+    // Phase 4: Fill remaining slots with DPS
     const remainingPlayers = shuffledPlayerPool.filter(p => !assignedPlayers.has(p.name))
     
-    // Sort remaining players to prioritize those with fewer role options
     remainingPlayers.sort((a, b) => {
       const aRoleCount = a.roles ? a.roles.length : 0
       const bRoleCount = b.roles ? b.roles.length : 0
-      return aRoleCount - bRoleCount // Players with fewer roles get assigned first
+      return aRoleCount - bRoleCount
     })
     
     remainingPlayers.forEach((player) => {
       let targetGroupIdx
       
       if (groupMode === "even") {
-        // Find the group with the fewest players
         const groupSizes = groups.map(g => g.length)
         const minSize = Math.min(...groupSizes)
         const targetGroups = groups
           .map((group, idx) => ({ group, idx }))
           .filter(g => g.group.length === minSize)
         
-        // Randomly choose one of the smallest groups
         const randomIndex = Math.floor(Math.random() * targetGroups.length)
         targetGroupIdx = targetGroups[randomIndex].idx
       } else {
-        // Random distribution
         targetGroupIdx = Math.floor(Math.random() * numGroups)
       }
       
-      // Determine the best role for this player
-      const possibleRoles = ["DPS"] // Default to DPS
+      const possibleRoles = ["DPS"]
       const selectedRole = selectRoleForPlayer(player, possibleRoles) || "DPS"
       assignPlayerToGroup(player, targetGroupIdx, selectedRole)
     })
 
-    // Phase 4: Fill missing roles with PUGs and balance compositions
+    // Phase 5: Fill missing roles with PUGs and balance compositions
     groups.forEach(group => {
       const hasTank = group.some(p => p.assignedRole === "Tank")
       const hasHealer = group.some(p => p.assignedRole === "Healer")
       const hasSupport = group.some(p => p.assignedRole === "Support")
       const dpsCount = group.filter(p => p.assignedRole === "DPS").length
       
-      // Add tank if missing (required)
       if (!hasTank) {
         group.push(getRandomPUG("Tank"))
       }
       
-      // Add healer if missing (required)
       if (!hasHealer) {
         group.push(getRandomPUG("Healer"))
       }
       
-      // Determine target composition
-      let targetDpsCount = 3 // Default: 3 DPS, 1 Tank, 1 Healer
+      let targetDpsCount = 3
       if (hasSupport) {
-        targetDpsCount = 2 // With support: 2 DPS, 1 Support, 1 Tank, 1 Healer
+        targetDpsCount = 2
       }
       
-      // Fill up to target DPS count
       for (let i = dpsCount; i < targetDpsCount; i++) {
         group.push(getRandomPUG("DPS"))
       }
@@ -865,1151 +1012,156 @@ function App() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
-        * {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
-
-        body {
-          font-family: 'Inter', 'Segoe UI', sans-serif;
-          background-color: #242424;
-          color: rgba(255, 255, 255, 0.87);
-          line-height: 1.5;
-          margin: 0;
-          padding: 0;
-          padding-bottom: 120px;
-        }
-
-        #root {
-          width: 100%;
-          margin: 0;
-          padding: 0;
-          text-align: center;
-        }
-
-        .app-container {
-          width: 100%;
-          min-height: 100vh;
-          padding: 2rem;
-          box-sizing: border-box;
-        }
-
-        @media (min-width: 1600px) {
-          .app-container {
-            max-width: 1500px;
-            margin: 0 auto;
-          }
-        }
-
-        .app-header {
-          margin-bottom: 2rem;
-          position: relative;
-          display: flex;
-          justify-content: center;
-          padding: 1rem 0;
-        }
-
-        .title {
-          font-size: 3rem;
-          font-weight: 800;
-          position: relative;
-          padding: 0.5rem 1.5rem;
-          text-align: center;
-          border-radius: 8px;
-          background: linear-gradient(135deg, rgba(35, 39, 60, 0.8), rgba(30, 34, 52, 0.9));
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 
-                      0 10px 30px rgba(40, 57, 122, 0.2);
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-          z-index: 1;
-        }
-
-        .title-thursday {
-          background: linear-gradient(to bottom, #ffffff, #a5a7dd);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          text-shadow: 0 2px 10px rgba(116, 124, 207, 0.3);
-          margin-right: 0.3rem;
-        }
-
-        .title-plus {
-          background: linear-gradient(to bottom, #8e6fff, #4f34c3);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          font-size: 3.5rem;
-          font-weight: 900;
-          text-shadow: 0 0 20px rgba(142, 111, 255, 0.7);
-          position: relative;
-        }
-
-        .title-plus::after {
-          content: '';
-          position: absolute;
-          bottom: 0.2rem;
-          left: -0.2rem;
-          right: -0.2rem;
-          height: 3px;
-          background: linear-gradient(90deg, transparent, #8e6fff, transparent);
-          border-radius: 3px;
-          opacity: 0.7;
-        }
-
-        .title-glow {
-          position: absolute;
-          width: 120%;
-          height: 120%;
-          background: radial-gradient(circle, rgba(96, 108, 255, 0.1) 0%, rgba(30, 34, 52, 0) 70%);
-          top: -10%;
-          left: -10%;
-          pointer-events: none;
-          z-index: -1;
-          animation: pulse 3s infinite;
-        }
-
-        @keyframes pulse {
-          0% { opacity: 0.5; }
-          50% { opacity: 0.8; }
-          100% { opacity: 0.5; }
-        }
-
-        h2 {
-          margin-bottom: 0.8rem;
-          color: #61dafb;
-          font-size: 1.25rem;
-        }
-
-        .content-container {
-          display: flex;
-          flex-direction: row;
-          gap: 2rem;
-          margin: 2rem 0;
-          min-height: 70vh;
-          width: 100%;
-          max-width: 1500px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-
-        .input-container {
-          flex: 2;
-          display: flex;
-          flex-direction: column;
-          background-color: #1a1a1a;
-          border-radius: 8px;
-          padding: 1.5rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          text-align: left;
-          max-height: 70vh;
-          overflow-y: auto;
-        }
-
-        .output-container {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          background-color: #1a1a1a;
-          border-radius: 8px;
-          padding: 1.5rem;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          text-align: left;
-          max-height: 70vh;
-          overflow-y: auto;
-        }
-
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1rem;
-        }
-
-        .reset-rotation-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: rgba(142, 111, 255, 0.2);
-          border: 1px solid #8e6fff;
-          color: #8e6fff;
-          padding: 0.5rem 1rem;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 0.85rem;
-          transition: all 0.2s;
-        }
-
-        .reset-rotation-btn:hover {
-          background: rgba(142, 111, 255, 0.3);
-          transform: translateY(-1px);
-        }
-
-        .player-input-container {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.6rem;
-          margin-bottom: 0.6rem;
-          background-color: #2a2a2a;
-          border-radius: 4px;
-          position: relative;
-          cursor: grab;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .player-input-container li {
-          list-style: none;
-          min-width: 90px;
-          font-weight: bold;
-          font-size: 0.9rem;
-        }
-
-        .player-input-container.dragging {
-          opacity: 0.5;
-          transform: scale(0.98);
-          box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .used-roles {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-          margin-left: 0.75rem;
-        }
-
-        .used-roles-text {
-          font-size: 0.75rem;
-          color: #888;
-        }
-
-        .used-role-icon {
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          opacity: 0.6;
-          border: 2px solid #8e6fff;
-        }
-
-        input[type="checkbox"] {
-          accent-color: #8e6fff;
-          width: 16px;
-          height: 16px;
-          cursor: pointer;
-        }
-
-        .role-option {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          margin-right: 0.75rem;
-        }
-
-        .role-icon {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          object-fit: cover;
-        }
-
-        .gear-toggle {
-          display: flex;
-          align-items: center;
-          gap: 0.2rem;
-          background: rgba(142, 111, 255, 0.1);
-          border: 1px solid rgba(142, 111, 255, 0.3);
-          color: #8e6fff;
-          padding: 0.4rem 0.6rem;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 0.8rem;
-          transition: all 0.2s;
-          margin-left: auto;
-        }
-
-        .gear-toggle:hover {
-          background: rgba(142, 111, 255, 0.2);
-        }
-
-        .gear-box {
-          background: rgba(30, 30, 30, 0.95);
-          border: 1px solid #444;
-          border-radius: 6px;
-          padding: 0.75rem;
-          margin: 0.4rem 0 0.8rem 1.5rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-          max-height: 400px;
-          overflow: hidden;
-          opacity: 1;
-          transform: translateY(0);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .gear-box h4 {
-          color: #8e6fff;
-          margin-bottom: 0.6rem;
-          font-size: 0.9rem;
-        }
-
-        .preferences-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 0.75rem;
-          margin-bottom: 0.75rem;
-        }
-
-        .preference-item {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: rgba(42, 42, 42, 0.7);
-          padding: 0.5rem;
-          border-radius: 4px;
-        }
-
-        .pref-role-icon {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-        }
-
-        .preference-item label {
-          font-size: 0.85rem;
-          min-width: 50px;
-          color: #ccc;
-        }
-
-        .preference-input {
-          width: 50px;
-          padding: 0.2rem 0.4rem;
-          background: #333;
-          border: 1px solid #555;
-          border-radius: 3px;
-          color: #fff;
-          font-size: 0.85rem;
-          text-align: center;
-        }
-
-        .preference-note {
-          font-size: 0.8rem;
-          color: #888;
-          font-style: italic;
-          text-align: center;
-        }
-
-        .drag-handle {
-          display: flex;
-          align-items: center;
-          padding-right: 10px;
-          color: #777;
-          cursor: grab;
-        }
-
-        .drag-icon {
-          font-size: 1.2rem;
-          user-select: none;
-        }
-
-        .new-player {
-          display: flex;
-          align-items: center;
-          border: 2px dashed #444;
-          background-color: rgba(42, 42, 42, 0.5);
-          transition: background-color 0.3s;
-        }
-
-        .new-player:hover {
-          background-color: #2a2a2a;
-        }
-
-        .new-player-input {
-          flex: 1;
-          padding: 0.5rem;
-          background-color: #333;
-          border: 1px solid #444;
-          border-radius: 4px;
-          color: #fff;
-          margin-right: 10px;
-          font-size: 0.9rem;
-        }
-
-        .add-player-btn {
-          background: linear-gradient(to bottom, #8e6fff, #4f34c3);
-          color: white;
-          border: none;
-          border-radius: 4px;
-          padding: 0.5rem 1rem;
-          cursor: pointer;
-          font-weight: 500;
-          transition: all 0.3s;
-        }
-
-        .add-player-btn:hover {
-          background: linear-gradient(to bottom, #9d80ff, #5e43d2);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(79, 52, 195, 0.4);
-        }
-
-        .add-player-btn:active {
-          transform: translateY(1px);
-        }
-
-        .player-output-container {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0.75rem;
-          margin-bottom: 0.75rem;
-          background-color: #2a2a2a;
-          border-radius: 4px;
-          position: relative;
-          background-blend-mode: overlay;
-          transition: transform 0.2s;
-        }
-
-        .player-output-container:hover {
-          transform: translateX(5px);
-        }
-
-        .player-output-container li {
-          list-style: none;
-        }
-
-        .player-name {
-          font-weight: 500;
-        }
-
-        .role-indicators {
-          display: flex;
-          align-items: center;
-        }
-
-        .role-output-icon {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          object-fit: cover;
-        }
-
-        .empty-state {
-          text-align: center;
-          color: #888;
-          padding: 2rem;
-          font-style: italic;
-        }
-
-        .delete-zone {
-          position: fixed;
-          bottom: -100px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 200px;
-          height: 80px;
-          background-color: #3a0000;
-          border: 2px dashed #ff5252;
-          border-radius: 8px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          color: #ff5252;
-          transition: bottom 0.3s ease-in-out;
-          z-index: 1000;
-        }
-
-        .delete-zone.visible {
-          bottom: 20px;
-        }
-
-        .delete-icon {
-          font-size: 1.5rem;
-          margin-bottom: 5px;
-        }
-
-        .ghost-element {
-          position: absolute;
-          top: -1000px;
-          background-color: #2a2a2a;
-          padding: 5px 10px;
-          border-radius: 4px;
-          color: white;
-          opacity: 0.8;
-        }
-
-        .group-output {
-          margin-bottom: 1.5rem;
-        }
-
-        .group-output h3 {
-          margin-top: 0;
-          margin-bottom: 0.75rem;
-          color: #8e6fff;
-          border-bottom: 1px solid #333;
-          padding-bottom: 0.5rem;
-        }
-
-        .pug-player {
-          background-color: rgba(42, 42, 42, 0.9);
-          border-left: 3px solid #8e6fff;
-        }
-
-        .pug-badge {
-          background-color: #8e6fff;
-          color: #1a1a1a;
-          font-size: 0.7rem;
-          font-weight: bold;
-          padding: 2px 6px;
-          border-radius: 4px;
-          margin-right: 8px;
-        }
-
-        .controls-bar {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          background-color: #1a1a1a;
-          border-top: 1px solid #333;
-          padding: 1rem 2rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .controls-content {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          width: 100%;
-          max-width: 1500px;
-          margin: 0 auto;
-          padding: 0 2rem;
-          box-sizing: border-box;
-        }
-
-        /* Responsive design */
-        @media (max-width: 1600px) {
-          .app-container {
-            padding: 2rem;
-          }
-          
-          .content-container {
-            margin: 2rem 0;
-          }
-        }
-
-        @media (max-width: 1200px) {
-          .app-container {
-            padding: 1.5rem;
-          }
-          
-          .content-container {
-            gap: 1.5rem;
-            margin: 1.5rem 0;
-          }
-          
-          .input-container, .output-container {
-            padding: 1.25rem;
-          }
-          
-          .title {
-            font-size: 2.5rem;
-          }
-          
-          .title-plus {
-            font-size: 3rem;
-          }
-        }
-
-        @media (max-width: 1480px) {
-          .content-container {
-            flex-direction: column;
-            gap: 1rem;
-            margin: 1rem auto;
-            min-height: auto;
-            max-width: min(920px, calc(100vw - 2rem));
-            width: 100%;
-          }
-          
-          .input-container, .output-container {
-            flex: 1;
-            max-height: none;
-            width: 100%;
-          }
-          
-          .input-container {
-            max-height: 60vh;
-            overflow-y: auto;
-          }
-          
-          .output-container {
-            max-height: 50vh;
-            overflow-y: auto;
-          }
-        }
-
-        @media (max-width: 1200px) {
-          .app-container {
-            padding: max(1rem, 1.5vw);
-          }
-          
-          .content-container {
-            margin: max(0.75rem, 1.2vw) auto;
-            gap: max(0.75rem, 1vw);
-            max-width: min(920px, calc(100vw - 2 * max(1rem, 1.5vw)));
-          }
-        }
-
-        @media (max-width: 920px) {
-          .app-container {
-            padding: 1rem;
-          }
-          
-          .content-container {
-            max-width: calc(100vw - 2rem);
-            margin: 1rem 0;
-          }
-        }
-
-        @media (max-width: 992px) {
-          .app-container {
-            padding: 1rem;
-          }
-          
-          .controls-bar {
-            padding: 1rem;
-          }
-          
-          .controls-content {
-            padding: 0 1rem;
-          }
-          
-          .controls-left {
-            gap: 1.5rem;
-          }
-          
-          .mode-options {
-            flex-direction: column;
-            gap: 0.5rem;
-          }
-          
-          .mode-bubble {
-            padding: 0.5rem 1rem;
-            text-align: center;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .app-container {
-            padding: 0.5rem;
-          }
-          
-          .content-container {
-            margin: 0.5rem 0;
-            gap: 0.75rem;
-            max-width: calc(100vw - 1rem);
-          }
-          
-          .input-container, .output-container {
-            padding: 1rem;
-          }
-          
-          .player-input-container {
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            padding: 0.5rem;
-          }
-          
-          .player-input-container li {
-            min-width: 80px;
-            font-size: 0.85rem;
-          }
-          
-          .role-icon {
-            width: 28px;
-            height: 28px;
-          }
-          
-          .preferences-grid {
-            grid-template-columns: 1fr;
-            gap: 0.5rem;
-          }
-          
-          .gear-box {
-            margin-left: 0;
-            padding: 0.6rem;
-          }
-          
-          .title {
-            font-size: 2rem;
-          }
-          
-          .title-plus {
-            font-size: 2.5rem;
-          }
-          
-          .controls-bar {
-            flex-direction: column;
-            gap: 1rem;
-            padding: 0.75rem;
-          }
-          
-          .controls-content {
-            flex-direction: column;
-            gap: 1rem;
-            padding: 0;
-          }
-          
-          .controls-left {
-            flex-direction: column;
-            gap: 1rem;
-            width: 100%;
-          }
-          
-          .mode-section, .rotation-section {
-            width: 100%;
-            text-align: center;
-          }
-          
-          .create-groups-btn {
-            width: 100%;
-            padding: 1rem;
-            max-width: none;
-          }
-          
-          .section-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-          }
-          
-          .reset-rotation-btn {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.8rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .app-container {
-            padding: 0.25rem;
-          }
-          
-          .content-container {
-            margin: 0.25rem 0;
-            max-width: calc(100vw - 0.5rem);
-          }
-          
-          .input-container, .output-container {
-            padding: 0.75rem;
-          }
-          
-          .player-input-container {
-            padding: 0.4rem;
-            gap: 0.4rem;
-          }
-          
-          .player-input-container li {
-            min-width: 70px;
-            font-size: 0.8rem;
-          }
-          
-          .role-icon {
-            width: 24px;
-            height: 24px;
-          }
-          
-          .gear-toggle {
-            padding: 0.3rem 0.5rem;
-            font-size: 0.75rem;
-          }
-          
-          .title {
-            font-size: 1.5rem;
-            padding: 0.4rem 1rem;
-          }
-          
-          .title-plus {
-            font-size: 2rem;
-          }
-          
-          .preference-item {
-            padding: 0.4rem;
-            gap: 0.4rem;
-          }
-          
-          .preference-input {
-            width: 45px;
-            padding: 0.15rem 0.3rem;
-            font-size: 0.8rem;
-          }
-          
-          .pref-role-icon {
-            width: 20px;
-            height: 20px;
-          }
-          
-          .controls-bar {
-            padding: 0.5rem;
-          }
-          
-          .mode-bubble {
-            padding: 0.6rem;
-          }
-          
-          .bubble-text {
-            font-size: 0.85rem;
-          }
-        }
-
-        /* Ensure content doesn't get hidden behind fixed controls */
-        @media (max-width: 768px) {
-          body {
-            padding-bottom: 160px;
-          }
-        }
-
-        .controls-left {
-          display: flex;
-          gap: 2rem;
-          align-items: center;
-        }
-
-        .mode-section h4 {
-          color: #8e6fff;
-          margin-bottom: 0.5rem;
-          font-size: 1rem;
-        }
-
-        .mode-options {
-          display: flex;
-          gap: 1rem;
-        }
-
-        .mode-bubble {
-          display: flex;
-          padding: 0.75rem 1.25rem;
-          background-color: #2a2a2a;
-          border-radius: 25px;
-          border: 2px solid transparent;
-          cursor: pointer;
-          transition: all 0.2s;
-          position: relative;
-        }
-
-        .mode-bubble.selected {
-          border-color: #8e6fff;
-          background-color: rgba(142, 111, 255, 0.1);
-        }
-
-        .mode-bubble input {
-          display: none;
-        }
-
-        .bubble-text {
-          font-size: 0.9rem;
-          font-weight: 500;
-        }
-
-        .rotation-section h4 {
-          color: #8e6fff;
-          margin-bottom: 0.5rem;
-          font-size: 1rem;
-        }
-
-        .rotation-toggle {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          cursor: pointer;
-        }
-
-        .toggle-slider {
-          position: relative;
-          width: 50px;
-          height: 26px;
-          background: #444;
-          border-radius: 13px;
-          transition: background-color 0.3s;
-        }
-
-        .toggle-slider::before {
-          content: '';
-          position: absolute;
-          top: 2px;
-          left: 2px;
-          width: 22px;
-          height: 22px;
-          background: white;
-          border-radius: 50%;
-          transition: transform 0.3s;
-        }
-
-        .rotation-toggle input[type="checkbox"] {
-          display: none;
-        }
-
-        .rotation-toggle input[type="checkbox"]:checked + .toggle-slider {
-          background: #8e6fff;
-        }
-
-        .rotation-toggle input[type="checkbox"]:checked + .toggle-slider::before {
-          transform: translateX(24px);
-        }
-
-        .toggle-text {
-          font-size: 0.9rem;
-          font-weight: 500;
-        }
-
-        .create-groups-btn {
-          padding: 0.8rem 1.5rem;
-          background: linear-gradient(to bottom, #8e6fff, #4f34c3);
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 1.1rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s;
-          min-width: 180px;
-          max-width: 280px;
-        }
-
-        .create-groups-btn:hover {
-          background: linear-gradient(to bottom, #9d80ff, #5e43d2);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(79, 52, 195, 0.4);
-        }
-
-        .create-groups-btn:active {
-          transform: translateY(1px);
-        }
-
-        .create-groups-btn:disabled {
-          background-color: #555;
-          cursor: not-allowed;
-          opacity: 0.7;
-          transform: none;
-          box-shadow: none;
-        }
-
-        .dice-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 300px;
-        }
-
-        .dice {
-          position: relative;
-          width: 100px;
-          height: 100px;
-          transform-style: preserve-3d;
-          animation: rolling 2s linear infinite;
-        }
-
-        .dice-face {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border-radius: 10px;
-          background: rgba(142, 111, 255, 0.8);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .dot {
-          position: absolute;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: #fff;
-          box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-        }
-
-        .center { top: 42px; left: 42px; }
-        .top-left { top: 16px; left: 16px; }
-        .top-right { top: 16px; right: 16px; }
-        .bottom-left { bottom: 16px; left: 16px; }
-        .bottom-right { bottom: 16px; right: 16px; }
-        .middle-left { top: 42px; left: 16px; }
-        .middle-right { top: 42px; right: 16px; }
-
-        .one { transform: translateZ(50px); }
-        .two { transform: rotateY(180deg) translateZ(50px); }
-        .three { transform: rotateY(90deg) translateZ(50px); }
-        .four { transform: rotateY(-90deg) translateZ(50px); }
-        .five { transform: rotateX(90deg) translateZ(50px); }
-        .six { transform: rotateX(-90deg) translateZ(50px); }
-
-        @keyframes rolling {
-          0% { transform: rotateX(0deg) rotateY(0deg); }
-          25% { transform: rotateX(90deg) rotateY(180deg); }
-          50% { transform: rotateX(180deg) rotateY(90deg); }
-          75% { transform: rotateX(270deg) rotateY(270deg); }
-          100% { transform: rotateX(360deg) rotateY(360deg); }
-        }
-
-        .dice-text {
-          margin-top: 20px;
-          font-size: 18px;
-          font-weight: 500;
-          color: #8e6fff;
-          animation: pulse-text 1.5s infinite;
-        }
-
-        @keyframes pulse-text {
-          0% { opacity: 0.6; }
-          50% { opacity: 1; }
-          100% { opacity: 0.6; }
-        }
-      ` }} />
+      <div className="app-header">
+        <h1 className="title">
+          <span className="title-thursday">Thursday</span>
+          <span className="title-plus">M+</span>
+          <div className="title-glow"></div>
+        </h1>
+      </div>
       
-      <div className="app-container">
-        <div className="app-header">
-          <h1 className="title">
-            <span className="title-thursday">Thursday</span>
-            <span className="title-plus">M+</span>
-            <div className="title-glow"></div>
-          </h1>
-        </div>
-        
-        {/* Delete zone that appears when dragging */}
-        <div 
-          className={`delete-zone ${isDragging ? 'visible' : ''}`}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <div className="delete-icon">🗑️</div>
-          <div>Drop to delete</div>
-        </div>
-        
-        <div className="content-container">
-          <div className='input-container'>
-            <div className="section-header">
-              <h2>Compadres</h2>
-              {rotationMode && (
-                <button 
-                  className="reset-rotation-btn"
-                  onClick={resetRotation}
-                  title="Reset role rotation for all players"
-                >
-                  <RotateCcw size={16} />
-                  Reset Rotation
-                </button>
-              )}
-            </div>
-            
-            {players.map((player, index) => (
-              <PlayerRow
-                key={index}
-                player={player}
-                index={index}
-                rotationMode={rotationMode}
-                expandedGearBoxes={expandedGearBoxes}
-                draggedIndex={draggedIndex}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onRoleToggle={handleRoleToggle}
-                onToggleGearBox={toggleGearBox}
-                onPreferenceChange={handlePreferenceChange}
-              />
-            ))}
-            
-            {/* Add new player component */}
-            <div className='player-input-container new-player'>
-              <input
-                type="text"
-                placeholder="New player name"
-                value={newPlayerName}
-                onChange={(e) => setNewPlayerName(e.target.value)}
-                className="new-player-input"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddPlayer()
-                }}
-              />
+      <div 
+        className={`delete-zone ${isDragging ? 'visible' : ''}`}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        <div className="delete-icon">🗑️</div>
+        <div>Drop to delete</div>
+      </div>
+      
+      <div className="content-container">
+        <div className='input-container'>
+          <div className="section-header">
+            <h2>Compadres</h2>
+            {rotationMode && (
               <button 
-                onClick={handleAddPlayer}
-                className="add-player-btn"
+                className="reset-rotation-btn"
+                onClick={resetRotation}
+                title="Reset role rotation for all players"
               >
-                Add Player
+                <RotateCcw size={16} />
+                Reset Rotation
               </button>
-            </div>
-          </div>
-          
-          <div className='output-container'>
-            <h2>Groups</h2>
-            
-            {isLoading ? (
-              <DiceAnimation />
-            ) : (
-              <GroupDisplay groups={groups} />
             )}
           </div>
+          
+          {players.map((player, index) => (
+            <PlayerRow
+              key={index}
+              player={player}
+              index={index}
+              rotationMode={rotationMode}
+              expandedGearBoxes={expandedGearBoxes}
+              draggedIndex={draggedIndex}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onRoleToggle={handleRoleToggle}
+              onToggleGearBox={toggleGearBox}
+              onPreferenceChange={handlePreferenceChange}
+            />
+          ))}
+          
+          <div className='player-input-container new-player'>
+            <input
+              type="text"
+              placeholder="New player name"
+              value={newPlayerName}
+              onChange={(e) => setNewPlayerName(e.target.value)}
+              className="new-player-input"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddPlayer()
+              }}
+            />
+            <button 
+              onClick={handleAddPlayer}
+              className="add-player-btn"
+            >
+              Add Player
+            </button>
+          </div>
         </div>
         
-        {/* Horizontal controls bar */}
-        <div className="controls-bar">
-          <div className="controls-content">
-            <div className="controls-left">
-              <div className="mode-section">
-                <h4>Distribution:</h4>
-                <div className="mode-options">
-                  <label className={`mode-bubble ${groupMode === 'even' ? 'selected' : ''}`}>
-                    <input 
-                      type="radio" 
-                      name="groupMode" 
-                      value="even"
-                      checked={groupMode === 'even'}
-                      onChange={() => setGroupMode('even')}
-                    />
-                    <span className="bubble-text">Even Groups</span>
-                  </label>
-                  
-                  <label className={`mode-bubble ${groupMode === 'random' ? 'selected' : ''}`}>
-                    <input 
-                      type="radio" 
-                      name="groupMode" 
-                      value="random"
-                      checked={groupMode === 'random'}
-                      onChange={() => setGroupMode('random')}
-                    />
-                    <span className="bubble-text">Random</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="rotation-section">
-                <h4>Rotation:</h4>
-                <label className="rotation-toggle">
+        <div className='output-container'>
+          <h2>Groups</h2>
+          
+          {isLoading ? (
+            <DiceAnimation 
+              showHardMode={showHardModeSlots}
+              onHardModeComplete={handleHardModeComplete}
+            />
+          ) : (
+            <GroupDisplay 
+              groups={groups} 
+              hardModeChallenge={currentHardModeChallenge}
+            />
+          )}
+        </div>
+      </div>
+      
+      <div className="controls-bar">
+        <div className="controls-content">
+          <div className="controls-left">
+            <div className="mode-section">
+              <h4>Distribution:</h4>
+              <div className="mode-options">
+                <label className={`mode-bubble ${groupMode === 'even' ? 'selected' : ''}`}>
                   <input 
-                    type="checkbox"
-                    checked={rotationMode}
-                    onChange={(e) => setRotationMode(e.target.checked)}
+                    type="radio" 
+                    name="groupMode" 
+                    value="even"
+                    checked={groupMode === 'even'}
+                    onChange={() => setGroupMode('even')}
                   />
-                  <span className="toggle-slider"></span>
-                  <span className="toggle-text">Role Rotation</span>
+                  <span className="bubble-text">Even Groups</span>
+                </label>
+                
+                <label className={`mode-bubble ${groupMode === 'random' ? 'selected' : ''}`}>
+                  <input 
+                    type="radio" 
+                    name="groupMode" 
+                    value="random"
+                    checked={groupMode === 'random'}
+                    onChange={() => setGroupMode('random')}
+                  />
+                  <span className="bubble-text">Random</span>
                 </label>
               </div>
             </div>
-            
-            <button 
-              className="create-groups-btn"
-              onClick={createGroups}
-              disabled={players.length < 1 || isLoading}
-            >
-              {isLoading ? "Rolling..." : "Create Groups"}
-            </button>
+
+            <div className="rotation-section">
+              <h4>Rotation:</h4>
+              <label className="rotation-toggle">
+                <input 
+                  type="checkbox"
+                  checked={rotationMode}
+                  onChange={(e) => setRotationMode(e.target.checked)}
+                />
+                <span className="toggle-slider"></span>
+                <span className="toggle-text">Role Rotation</span>
+              </label>
+            </div>
+
+            <div className="hardmode-section">
+              <h4>Hard Mode:</h4>
+              <label className="rotation-toggle">
+                <input 
+                  type="checkbox"
+                  checked={hardModeEnabled}
+                  onChange={(e) => setHardModeEnabled(e.target.checked)}
+                />
+                <span className="toggle-slider"></span>
+                <span className="toggle-text">🎰 Silly Challenges</span>
+              </label>
+            </div>
           </div>
+          
+          <button 
+            className="create-groups-btn"
+            onClick={createGroups}
+            disabled={players.length < 1 || isLoading}
+          >
+            {isLoading ? "Rolling..." : "Create Groups"}
+          </button>
         </div>
       </div>
     </>
