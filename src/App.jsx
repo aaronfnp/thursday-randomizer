@@ -7,6 +7,7 @@ const HardModeSlotMachine = ({ isVisible, onComplete }) => {
   const [currentSlots, setCurrentSlots] = useState([0, 0, 0])
   const [isSpinning, setIsSpinning] = useState(false)
   const [finalChallenge, setFinalChallenge] = useState(null)
+  const [showResult, setShowResult] = useState(false)
 
   // Hard Mode Challenges
   const challenges = [
@@ -125,6 +126,7 @@ const HardModeSlotMachine = ({ isVisible, onComplete }) => {
   useState(() => {
     if (isVisible && !isSpinning) {
       setIsSpinning(true)
+      setShowResult(false)
       
       // Spin animation
       const spinInterval = setInterval(() => {
@@ -145,47 +147,68 @@ const HardModeSlotMachine = ({ isVisible, onComplete }) => {
         // Show challenge immediately above groups
         onComplete(selectedChallenge)
         
-        // Hide slot machine after a shorter delay
+        // Show the result screen
         setTimeout(() => {
-          // Slot machine will hide when onComplete sets showHardModeSlots to false
-        }, 800)
+          setShowResult(true)
+        }, 300)
       }, 2000)
     }
   }, [isVisible])
 
+  const handleCloseModal = () => {
+    setShowResult(false)
+    setFinalChallenge(null)
+    setCurrentSlots([0, 0, 0])
+  }
+
   if (!isVisible) return null
 
   return (
-    <div className="hard-mode-overlay">
-      <div className="slot-machine">
-        <div className="slot-machine-header">
-          <h3>🎰 HARD MODE ACTIVATED 🎰</h3>
-          <p>Rolling for your challenge...</p>
-        </div>
-        
-        <div className="slot-container">
-          <div className="slot-reel">
-            <div className="slot-symbol">{slotSymbols[currentSlots[0]]}</div>
-          </div>
-          <div className="slot-reel">
-            <div className="slot-symbol">{slotSymbols[currentSlots[1]]}</div>
-          </div>
-          <div className="slot-reel">
-            <div className="slot-symbol">{slotSymbols[currentSlots[2]]}</div>
-          </div>
-        </div>
+    <div className="hard-mode-overlay" onClick={handleCloseModal}>
+      <div className="slot-machine" onClick={(e) => e.stopPropagation()}>
+        {!showResult ? (
+          <>
+            <div className="slot-machine-header">
+              <h3>🎰 HARD MODE ACTIVATED 🎰</h3>
+              <p>Rolling for your challenge...</p>
+            </div>
+            
+            <div className="slot-container">
+              <div className="slot-reel">
+                <div className="slot-symbol">{slotSymbols[currentSlots[0]]}</div>
+              </div>
+              <div className="slot-reel">
+                <div className="slot-symbol">{slotSymbols[currentSlots[1]]}</div>
+              </div>
+              <div className="slot-reel">
+                <div className="slot-symbol">{slotSymbols[currentSlots[2]]}</div>
+              </div>
+            </div>
 
-        {finalChallenge && !isSpinning && (
-          <div className="challenge-result">
-            <div className="challenge-emoji">{finalChallenge.emoji}</div>
-            <div className="challenge-title">{finalChallenge.title}</div>
-            <div className="challenge-description">{finalChallenge.description}</div>
+            <div className="slot-machine-footer">
+              {isSpinning ? "🎲 Rolling..." : "🎲 Rolling..."}
+            </div>
+          </>
+        ) : (
+          <div className="challenge-chosen">
+            <div className="challenge-chosen-header">
+              <h2>🎉 THIS WAS CHOSEN! 🎉</h2>
+            </div>
+            
+            <div className="challenge-chosen-content">
+              <div className="challenge-chosen-emoji">{finalChallenge.emoji}</div>
+              <div className="challenge-chosen-title">{finalChallenge.title}</div>
+              <div className="challenge-chosen-description">{finalChallenge.description}</div>
+            </div>
+            
+            <div className="challenge-chosen-footer">
+              <button className="challenge-close-btn" onClick={handleCloseModal}>
+                Let's Go! 🚀
+              </button>
+              <p className="challenge-close-hint">Click anywhere to close</p>
+            </div>
           </div>
         )}
-        
-        <div className="slot-machine-footer">
-          {isSpinning ? "🎲 Rolling..." : finalChallenge ? "Challenge Assigned!" : "🎲 Rolling..."}
-        </div>
       </div>
     </div>
   )
@@ -770,8 +793,8 @@ function App() {
   }
 
   const handleHardModeComplete = (challenge) => {
-    setShowHardModeSlots(false)
     setCurrentHardModeChallenge(challenge)
+    // Don't immediately hide the slot machine - let user close it manually
   }
 
   const createGroups = () => {
@@ -784,7 +807,7 @@ function App() {
     setIsLoading(true)
     setCurrentHardModeChallenge(null)
     
-    // Show hard mode slots if enabled
+    // Always show hard mode slots if enabled
     if (hardModeEnabled) {
       setTimeout(() => {
         setShowHardModeSlots(true)
@@ -795,6 +818,123 @@ function App() {
       const playerPool = [...players]
       const finalGroups = generateOptimalGroups(playerPool)
       setGroups(finalGroups)
+      
+      // If hard mode is enabled but slot machine didn't run, assign challenge directly
+      if (hardModeEnabled && !showHardModeSlots) {
+        const challenges = [
+          {
+            title: "Interrupt Olympics",
+            description: "Most interrupts wins 100g from each player! Time to show off those reflexes.",
+            emoji: "🛑",
+            icon: "⛔"
+          },
+          {
+            title: "Death Tax Collector",
+            description: "Most deaths pays 50g to everyone else! Stay alive or pay up.",
+            emoji: "💀",
+            icon: "⚰️"
+          },
+          {
+            title: "Compliment Your PUG",
+            description: "Give your pug teammate genuine compliments all run! Spread the love.",
+            emoji: "🤝",
+            icon: "❤️"
+          },
+          {
+            title: "Damage Meter Flask Fund",
+            description: "Lowest overall DPS buys everyone flasks! No pressure...",
+            emoji: "📊",
+            icon: "🧪"
+          },
+          {
+            title: "First to Fall Lottery",
+            description: "First player to die owes 200g to the pot - survivors split it!",
+            emoji: "🎰",
+            icon: "💰"
+          },
+          {
+            title: "Accidental Comedian",
+            description: "Every time you mess up a mechanic, tell a dad joke in chat!",
+            emoji: "🤡",
+            icon: "😂"
+          },
+          {
+            title: "DPS Ends in 4 Feast",
+            description: "If your overall DPS ends with the number 4, you buy everyone a feast!",
+            emoji: "4️⃣",
+            icon: "🍖"
+          },
+          {
+            title: "Dispel Derby",
+            description: "If your dispells end in 7, you win! Other players pay 75g to the cleanse champion.",
+            emoji: "✨",
+            icon: "🧼"
+          },
+          {
+            title: "Pet Battle Royale Prep",
+            description: "Summon random battle pets between pulls! Most adorable pet wins hearts.",
+            emoji: "🐾",
+            icon: "🐕"
+          },
+          {
+            title: "Transmog Fashion Show",
+            description: "Rate each other's transmog 1-10! Lowest score buys winner a token.",
+            emoji: "👗",
+            icon: "✨"
+          },
+          {
+            title: "Deaths End in 7 Penalty",
+            description: "If your death count ends with 7, you owe everyone 100g each!",
+            emoji: "7️⃣",
+            icon: "💀"
+          },
+          {
+            title: "HPS Ends in 9 Jackpot",
+            description: "If healer's HPS ends with 9, everyone else owes them 50g!",
+            emoji: "9️⃣",
+            icon: "💚"
+          },
+          {
+            title: "Helpful Tip Exchange",
+            description: "Share your best M+ tip! Most helpful tip earns gold from grateful friends.",
+            emoji: "💡",
+            icon: "🧠"
+          },
+          {
+            title: "Sexy Transmog Contest",
+            description: "Everyone must transmog to look as sexy as possible! Vote for hottest look.",
+            emoji: "💋",
+            icon: "🔥"
+          },
+          {
+            title: "Cute Transmog Contest",
+            description: "Everyone must transmog to look adorable! Cutest outfit wins gold from others.",
+            emoji: "🥰",
+            icon: "😊"
+          },
+          {
+            title: "Ugly Transmog Contest",
+            description: "Everyone must transmog to look hideous! Most disgusting look wins the pot.",
+            emoji: "🤮",
+            icon: "👹"
+          },
+          {
+            title: "Scary Transmog Contest",
+            description: "Everyone must transmog to look terrifying! Spookiest outfit gets gold rewards.",
+            emoji: "👻",
+            icon: "😱"
+          },
+          {
+            title: "Royal Transmog Contest",
+            description: "Everyone must transmog to look like royalty! Most regal appearance wins tribute.",
+            emoji: "👑",
+            icon: "🏰"
+          }
+        ]
+        const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)]
+        setCurrentHardModeChallenge(randomChallenge)
+      }
+      
       setIsLoading(false)
     }, 1500)
   }
