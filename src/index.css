@@ -965,6 +965,89 @@ input[type="checkbox"] {
   font-size: 0.95rem;
 }
 
+/* Welcome Modal */
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.welcome-modal {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(142, 111, 255, 0.15);
+  border: 1px solid rgba(142, 111, 255, 0.3);
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+  animation: celebrationPop 0.5s ease-out;
+}
+
+.welcome-text {
+  font-size: 1.4rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.welcome-banner {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 4px 20px rgba(142, 111, 255, 0.3));
+}
+
+.welcome-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.welcome-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #888;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.welcome-checkbox-label span {
+  user-select: none;
+}
+
+.welcome-enter-btn {
+  background: linear-gradient(to bottom, #8e6fff, #4f34c3);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(142, 111, 255, 0.4);
+}
+
+.welcome-enter-btn:hover {
+  background: linear-gradient(to bottom, #9d80ff, #5e43d2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(142, 111, 255, 0.6);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .content-container {

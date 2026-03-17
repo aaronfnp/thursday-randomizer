@@ -2,6 +2,44 @@ import { useState } from 'react'
 import { ChevronDown, ChevronUp, Settings, RotateCcw } from 'lucide-react'
 import './App.css'
 
+// Component: Welcome Modal
+const WelcomeModal = ({ onClose }) => {
+  const [dontShowAgain, setDontShowAgain] = useState(false)
+
+  const handleClose = () => {
+    if (dontShowAgain) {
+      localStorage.setItem('hideWelcomeModal', 'true')
+    }
+    onClose()
+  }
+
+  return (
+    <div className="welcome-overlay" onClick={handleClose}>
+      <div className="welcome-modal" onClick={(e) => e.stopPropagation()}>
+        <p className="welcome-text">Welcome to</p>
+        <img
+          src="https://blz-contentstack-images.akamaized.net/v3/assets/blt3452e3b114fab0cd/blt8d3cecf84f200ed6/68a4ed936a17f5492299906f/midnight-logo-1.png"
+          alt="World of Warcraft: Midnight"
+          className="welcome-banner"
+        />
+        <div className="welcome-footer">
+          <label className="welcome-checkbox-label">
+            <input
+              type="checkbox"
+              checked={dontShowAgain}
+              onChange={(e) => setDontShowAgain(e.target.checked)}
+            />
+            <span>Don't show this again</span>
+          </label>
+          <button className="welcome-enter-btn" onClick={handleClose}>
+            Enter
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Component: Hard Mode Slot Machine
 const HardModeSlotMachine = ({ isVisible, onComplete }) => {
   const [currentSlots, setCurrentSlots] = useState([0, 0, 0])
@@ -577,6 +615,9 @@ function App() {
   const [hardModeEnabled, setHardModeEnabled] = useState(false)
   const [showHardModeSlots, setShowHardModeSlots] = useState(false)
   const [currentHardModeChallenge, setCurrentHardModeChallenge] = useState(null)
+  const [showWelcome, setShowWelcome] = useState(() => {
+    return localStorage.getItem('hideWelcomeModal') !== 'true'
+  })
 
   // Random PUG names
   const pugNames = [
@@ -1152,6 +1193,7 @@ function App() {
 
   return (
     <>
+      {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
       <div className="app-header">
         <h1 className="title">
           <span className="title-thursday">Thursday</span>
