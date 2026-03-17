@@ -759,23 +759,19 @@ input[type="checkbox"] {
 }
 
 /* Animated group reveal */
-.player-hidden {
+.player-reveal {
   opacity: 0;
-  transform: translateX(-20px);
-}
-
-.player-revealed {
-  animation: revealPlayer 0.4s ease-out forwards;
+  animation: revealPlayer 0.35s ease-out forwards;
 }
 
 @keyframes revealPlayer {
   from {
     opacity: 0;
-    transform: translateX(-20px) scale(0.95);
+    transform: translateX(-15px);
   }
   to {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
 }
 

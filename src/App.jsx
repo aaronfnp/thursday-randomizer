@@ -461,7 +461,7 @@ const PlayerRow = ({
 }
 
 // Component: Group display with animated reveal
-const GroupDisplay = ({ groups, polls, revealedCount }) => {
+const GroupDisplay = ({ groups, polls }) => {
   const getRoleIcon = (role) => {
     const roles = [
       {
@@ -504,10 +504,9 @@ const GroupDisplay = ({ groups, polls, revealedCount }) => {
           {polls && polls[groupIndex] && <GroupPoll poll={polls[groupIndex]} />}
           {group.map((player, playerIndex) => {
             const thisIndex = globalIndex++
-            const isRevealed = thisIndex < revealedCount
             return (
               <div
-                className={`player-output-container ${player.isPug ? 'pug-player' : ''} ${isRevealed ? 'player-revealed' : 'player-hidden'}`}
+                className={`player-output-container ${player.isPug ? 'pug-player' : ''} player-reveal`}
                 key={playerIndex}
                 style={{
                   backgroundImage: player.assignedRole ?
@@ -515,7 +514,7 @@ const GroupDisplay = ({ groups, polls, revealedCount }) => {
                     'none',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  animationDelay: `${thisIndex * 0.15}s`
+                  animationDelay: `${thisIndex * 0.12}s`
                 }}
               >
                 <span className="player-name">{player.name}</span>
@@ -641,7 +640,6 @@ function App() {
   const [expandedGearBoxes, setExpandedGearBoxes] = useState({})
   const [pollsEnabled, setPollsEnabled] = useState(false)
   const [activePolls, setActivePolls] = useState([])
-  const [revealedCount, setRevealedCount] = useState(0)
   const [showWelcome, setShowWelcome] = useState(() => {
     return localStorage.getItem('hideWelcomeModal') !== 'true'
   })
@@ -868,7 +866,6 @@ function App() {
     }
 
     setIsLoading(true)
-    setRevealedCount(0)
 
     setTimeout(() => {
       const playerPool = [...players]
@@ -884,17 +881,6 @@ function App() {
       }
 
       setIsLoading(false)
-
-      // Animated reveal - reveal one player at a time
-      const totalPlayers = finalGroups.reduce((sum, g) => sum + g.length, 0)
-      let revealed = 0
-      const revealInterval = setInterval(() => {
-        revealed++
-        setRevealedCount(revealed)
-        if (revealed >= totalPlayers) {
-          clearInterval(revealInterval)
-        }
-      }, 200)
     }, 1500)
   }
 
@@ -1206,7 +1192,6 @@ function App() {
             <GroupDisplay
               groups={groups}
               polls={activePolls}
-              revealedCount={revealedCount}
             />
           )}
         </div>
