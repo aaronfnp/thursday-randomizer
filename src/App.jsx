@@ -1,6 +1,172 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { ChevronDown, ChevronUp, Settings, RotateCcw } from 'lucide-react'
 import './App.css'
+
+// Component: Particle Canvas Background
+const ParticleBackground = () => {
+  const canvasRef = useRef(null)
+  const containerRef = useRef(null)
+  const particlesRef = useRef([])
+  const bgParticlesRef = useRef([])
+  const mouseRef = useRef({ x: -1000, y: -1000, isActive: false })
+  const frameIdRef = useRef(0)
+  const sizeRef = useRef({ w: 0, h: 0 })
+
+  const PARTICLE_DENSITY = 0.00015
+  const BG_PARTICLE_DENSITY = 0.00005
+  const MOUSE_RADIUS = 180
+  const RETURN_SPEED = 0.08
+  const DAMPING = 0.90
+  const REPULSION_STRENGTH = 1.2
+
+  const randomRange = (min, max) => Math.random() * (max - min) + min
+
+  const initParticles = useCallback((width, height) => {
+    sizeRef.current = { w: width, h: height }
+    const particleCount = Math.floor(width * height * PARTICLE_DENSITY)
+    const newParticles = []
+    for (let i = 0; i < particleCount; i++) {
+      const x = Math.random() * width
+      const y = Math.random() * height
+      newParticles.push({
+        x, y, originX: x, originY: y, vx: 0, vy: 0,
+        size: randomRange(1, 2.5),
+        color: Math.random() > 0.9 ? '#8e6fff' : '#ffffff',
+        angle: Math.random() * Math.PI * 2,
+      })
+    }
+    particlesRef.current = newParticles
+
+    const bgCount = Math.floor(width * height * BG_PARTICLE_DENSITY)
+    const newBg = []
+    for (let i = 0; i < bgCount; i++) {
+      newBg.push({
+        x: Math.random() * width, y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2,
+        size: randomRange(0.5, 1.5), alpha: randomRange(0.1, 0.4),
+        phase: Math.random() * Math.PI * 2,
+      })
+    }
+    bgParticlesRef.current = newBg
+  }, [])
+
+  const animate = useCallback((time) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const { w, h } = sizeRef.current
+    if (w === 0 || h === 0) { frameIdRef.current = requestAnimationFrame(animate); return }
+
+    ctx.clearRect(0, 0, w, h)
+
+    // Pulsating radial glow
+    const cx = w / 2, cy = h / 2
+    const pulseOpacity = Math.sin(time * 0.0008) * 0.035 + 0.085
+    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.7)
+    gradient.addColorStop(0, `rgba(142, 111, 255, ${pulseOpacity})`)
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, w, h)
+
+    // Background particles (twinkling stars)
+    const bgP = bgParticlesRef.current
+    ctx.fillStyle = '#ffffff'
+    for (let i = 0; i < bgP.length; i++) {
+      const p = bgP[i]
+      p.x += p.vx; p.y += p.vy
+      if (p.x < 0) p.x = w
+      if (p.x > w) p.x = 0
+      if (p.y < 0) p.y = h
+      if (p.y > h) p.y = 0
+      const twinkle = Math.sin(time * 0.002 + p.phase) * 0.5 + 0.5
+      ctx.globalAlpha = p.alpha * (0.3 + 0.7 * twinkle)
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    ctx.globalAlpha = 1.0
+
+    // Main particles - forces
+    const particles = particlesRef.current
+    const mouse = mouseRef.current
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i]
+      const dx = mouse.x - p.x, dy = mouse.y - p.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      if (mouse.isActive && distance < MOUSE_RADIUS) {
+        const force = (MOUSE_RADIUS - distance) / MOUSE_RADIUS * REPULSION_STRENGTH
+        p.vx -= (dx / distance) * force * 5
+        p.vy -= (dy / distance) * force * 5
+      }
+      p.vx += (p.originX - p.x) * RETURN_SPEED
+      p.vy += (p.originY - p.y) * RETURN_SPEED
+    }
+
+    // Integration & drawing
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i]
+      p.vx *= DAMPING; p.vy *= DAMPING
+      p.x += p.vx; p.y += p.vy
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+      const velocity = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
+      const opacity = Math.min(0.3 + velocity * 0.1, 1)
+      ctx.fillStyle = p.color === '#ffffff'
+        ? `rgba(255, 255, 255, ${opacity})`
+        : p.color
+      ctx.fill()
+    }
+
+    frameIdRef.current = requestAnimationFrame(animate)
+  }, [])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current && canvasRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect()
+        const dpr = window.devicePixelRatio || 1
+        canvasRef.current.width = width * dpr
+        canvasRef.current.height = height * dpr
+        canvasRef.current.style.width = `${width}px`
+        canvasRef.current.style.height = `${height}px`
+        const ctx = canvasRef.current.getContext('2d')
+        if (ctx) ctx.scale(dpr, dpr)
+        initParticles(width, height)
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    handleResize()
+    return () => window.removeEventListener('resize', handleResize)
+  }, [initParticles])
+
+  useEffect(() => {
+    frameIdRef.current = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(frameIdRef.current)
+  }, [animate])
+
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top, isActive: true }
+  }
+
+  const handleMouseLeave = () => {
+    mouseRef.current.isActive = false
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="particle-canvas-container"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <canvas ref={canvasRef} className="particle-canvas" />
+    </div>
+  )
+}
 
 // Component: Welcome Modal
 const WelcomeModal = ({ onClose }) => {
@@ -14,26 +180,30 @@ const WelcomeModal = ({ onClose }) => {
   }
 
   return (
-    <div className="welcome-overlay" onClick={handleClose}>
-      <div className="welcome-modal" onClick={(e) => e.stopPropagation()}>
-        <p className="welcome-text">Welcome to</p>
-        <img
-          src="https://blz-contentstack-images.akamaized.net/v3/assets/blt3452e3b114fab0cd/blt8d3cecf84f200ed6/68a4ed936a17f5492299906f/midnight-logo-1.png"
-          alt="World of Warcraft: Midnight"
-          className="welcome-banner"
-        />
-        <div className="welcome-footer">
-          <label className="welcome-checkbox-label">
-            <input
-              type="checkbox"
-              checked={dontShowAgain}
-              onChange={(e) => setDontShowAgain(e.target.checked)}
-            />
-            <span>Don't show this again</span>
-          </label>
-          <button className="welcome-enter-btn" onClick={handleClose}>
-            Enter
-          </button>
+    <div className="welcome-overlay">
+      <ParticleBackground />
+      <div className="welcome-content">
+        <div className="welcome-modal" onClick={(e) => e.stopPropagation()}>
+          <p className="welcome-thursday">Thursday</p>
+          <p className="welcome-text">Welcomes You To</p>
+          <img
+            src="https://blz-contentstack-images.akamaized.net/v3/assets/blt3452e3b114fab0cd/blt8d3cecf84f200ed6/68a4ed936a17f5492299906f/midnight-logo-1.png"
+            alt="World of Warcraft: Midnight"
+            className="welcome-banner"
+          />
+          <div className="welcome-footer">
+            <label className="welcome-checkbox-label">
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+              />
+              <span>Don't show this again</span>
+            </label>
+            <button className="welcome-enter-btn" onClick={handleClose}>
+              Enter
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -287,7 +457,7 @@ const GearBox = ({ player, playerIndex, onPreferenceChange }) => {
     },
     {
       title: "Support", 
-      img: "https://wowmeta.com/_app/immutable/assets/evoker-augmentation.Bn0_ORdu.avif"
+      img: "https://wow.zamimg.com/images/wow/icons/large/classicon_evoker_augmentation.jpg"
     }
   ]
 
@@ -351,7 +521,7 @@ const PlayerRow = ({
     },
     {
       title: "Support", 
-      img: "https://wowmeta.com/_app/immutable/assets/evoker-augmentation.Bn0_ORdu.avif"
+      img: "https://wow.zamimg.com/images/wow/icons/large/classicon_evoker_augmentation.jpg"
     }
   ]
 
@@ -450,7 +620,7 @@ const GroupDisplay = ({ groups, hardModeChallenge }) => {
       },
       {
         title: "Support", 
-        img: "https://wowmeta.com/_app/immutable/assets/evoker-augmentation.Bn0_ORdu.avif"
+        img: "https://wow.zamimg.com/images/wow/icons/large/classicon_evoker_augmentation.jpg"
       }
     ]
     const roleObj = roles.find(r => r.title === role)
@@ -592,18 +762,17 @@ function App() {
       usedRoles: []
     },
     {
-      name: "Aaron NP", 
+      name: "Aaron NP",
       roles: ["DPS", "Healer", "Support"],
       preferences: { Healer: 30, DPS: 40, Tank: 0, Support: 30 },
       usedRoles: []
     },
-    {
-      name: "David", 
-      roles: ["DPS"],
-      preferences: { Healer: 0, DPS: 100, Tank: 0, Support: 0 },
-      usedRoles: []
-    },
   ])
+
+  // Locked players - not eligible for group creation
+  const benchedPlayers = [
+    { name: "David", reason: "Not Even 90" }
+  ]
   const [newPlayerName, setNewPlayerName] = useState("")
   const [groups, setGroups] = useState([])
   const [isDragging, setIsDragging] = useState(false)
@@ -1194,6 +1363,9 @@ function App() {
   return (
     <>
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
+      <div className="app-bg-particles">
+        <ParticleBackground />
+      </div>
       <div className="app-header">
         <h1 className="title">
           <span className="title-thursday">Thursday</span>
@@ -1242,7 +1414,20 @@ function App() {
               onPreferenceChange={handlePreferenceChange}
             />
           ))}
-          
+
+          {benchedPlayers.length > 0 && (
+            <div className="benched-section">
+              <h3 className="benched-header">Not Even 90</h3>
+              {benchedPlayers.map((player, index) => (
+                <div key={index} className="benched-player">
+                  <span className="benched-lock">🔒</span>
+                  <span className="benched-name">{player.name}</span>
+                  <span className="benched-reason">{player.reason}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className='player-input-container new-player'>
             <input
               type="text"
